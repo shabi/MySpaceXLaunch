@@ -16,6 +16,36 @@
 		7C1BE752289FE25500935D4A /* MySpaceXLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE751289FE25500935D4A /* MySpaceXLaunchTests.swift */; };
 		7C1BE75C289FE25500935D4A /* MySpaceXLaunchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE75B289FE25500935D4A /* MySpaceXLaunchUITests.swift */; };
 		7C1BE75E289FE25500935D4A /* MySpaceXLaunchUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE75D289FE25500935D4A /* MySpaceXLaunchUITestsLaunchTests.swift */; };
+		7C1BE770289FE4F100935D4A /* LaunchListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE76F289FE4F100935D4A /* LaunchListViewController.swift */; };
+		7C1BE772289FE59E00935D4A /* LaunchDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE771289FE59E00935D4A /* LaunchDetailViewController.swift */; };
+		7C1BE774289FE5CC00935D4A /* LaunchListTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE773289FE5CC00935D4A /* LaunchListTableViewCell.swift */; };
+		7C1BE77628A0C75E00935D4A /* RestAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE77528A0C75E00935D4A /* RestAPIService.swift */; };
+		7C1BE78028A0DCA800935D4A /* CompanyInfoRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE77F28A0DCA800935D4A /* CompanyInfoRequest.swift */; };
+		7C1BE78228A0DCC700935D4A /* CompanyInfoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE78128A0DCC700935D4A /* CompanyInfoService.swift */; };
+		7C1BE78428A0DCEC00935D4A /* LaunchesRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE78328A0DCEC00935D4A /* LaunchesRequest.swift */; };
+		7C1BE78628A0DD2000935D4A /* LaunchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE78528A0DD2000935D4A /* LaunchService.swift */; };
+		7C1BE78828A0DE7B00935D4A /* CompanyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE78728A0DE7B00935D4A /* CompanyModel.swift */; };
+		7C1BE78C28A10A2C00935D4A /* CompanyInfoModelsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE78B28A10A2C00935D4A /* CompanyInfoModelsTest.swift */; };
+		7C1BE78E28A10DD200935D4A /* HeadquartersModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE78D28A10DD200935D4A /* HeadquartersModel.swift */; };
+		7C3B019328A4D1DA0087FEC4 /* Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1BE78F28A10E0A00935D4A /* Links.swift */; };
+		7C3B019528A4D3710087FEC4 /* LaunchListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3B019428A4D3710087FEC4 /* LaunchListViewModel.swift */; };
+		7C3B019728A4DADA0087FEC4 /* LaunchListTableViewCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3B019628A4DADA0087FEC4 /* LaunchListTableViewCellViewModel.swift */; };
+		7C3B019928A4F2FC0087FEC4 /* DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3B019828A4F2FC0087FEC4 /* DateFormatter.swift */; };
+		7C3B019B28A54EBE0087FEC4 /* ImageViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3B019A28A54EBE0087FEC4 /* ImageViewExtension.swift */; };
+		7C3B019D28A587270087FEC4 /* RocketDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3B019C28A587270087FEC4 /* RocketDetailViewController.swift */; };
+		7C3B019F28A588480087FEC4 /* RocketDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3B019E28A588480087FEC4 /* RocketDetailViewModel.swift */; };
+		7CF609C128A407EF00A74933 /* Orbit_params.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609B528A407EF00A74933 /* Orbit_params.swift */; };
+		7CF609C228A407EF00A74933 /* First_stage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609B628A407EF00A74933 /* First_stage.swift */; };
+		7CF609C328A407EF00A74933 /* Payloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609B728A407EF00A74933 /* Payloads.swift */; };
+		7CF609C428A407EF00A74933 /* Second_stage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609B828A407EF00A74933 /* Second_stage.swift */; };
+		7CF609C528A407EF00A74933 /* LinksInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609B928A407EF00A74933 /* LinksInfo.swift */; };
+		7CF609C628A407EF00A74933 /* Telemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609BA28A407EF00A74933 /* Telemetry.swift */; };
+		7CF609C728A407EF00A74933 /* Cores.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609BB28A407EF00A74933 /* Cores.swift */; };
+		7CF609C828A407EF00A74933 /* LaunchInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609BC28A407EF00A74933 /* LaunchInfo.swift */; };
+		7CF609C928A407EF00A74933 /* Launch_site.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609BD28A407EF00A74933 /* Launch_site.swift */; };
+		7CF609CA28A407EF00A74933 /* Fairings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609BE28A407EF00A74933 /* Fairings.swift */; };
+		7CF609CB28A407EF00A74933 /* Rocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609BF28A407EF00A74933 /* Rocket.swift */; };
+		7CF609CC28A407EF00A74933 /* Timeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF609C028A407EF00A74933 /* Timeline.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +79,36 @@
 		7C1BE757289FE25500935D4A /* MySpaceXLaunchUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MySpaceXLaunchUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C1BE75B289FE25500935D4A /* MySpaceXLaunchUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MySpaceXLaunchUITests.swift; sourceTree = "<group>"; };
 		7C1BE75D289FE25500935D4A /* MySpaceXLaunchUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MySpaceXLaunchUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		7C1BE76F289FE4F100935D4A /* LaunchListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchListViewController.swift; sourceTree = "<group>"; };
+		7C1BE771289FE59E00935D4A /* LaunchDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchDetailViewController.swift; sourceTree = "<group>"; };
+		7C1BE773289FE5CC00935D4A /* LaunchListTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchListTableViewCell.swift; sourceTree = "<group>"; };
+		7C1BE77528A0C75E00935D4A /* RestAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestAPIService.swift; sourceTree = "<group>"; };
+		7C1BE77F28A0DCA800935D4A /* CompanyInfoRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyInfoRequest.swift; sourceTree = "<group>"; };
+		7C1BE78128A0DCC700935D4A /* CompanyInfoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyInfoService.swift; sourceTree = "<group>"; };
+		7C1BE78328A0DCEC00935D4A /* LaunchesRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchesRequest.swift; sourceTree = "<group>"; };
+		7C1BE78528A0DD2000935D4A /* LaunchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchService.swift; sourceTree = "<group>"; };
+		7C1BE78728A0DE7B00935D4A /* CompanyModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyModel.swift; sourceTree = "<group>"; };
+		7C1BE78B28A10A2C00935D4A /* CompanyInfoModelsTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyInfoModelsTest.swift; sourceTree = "<group>"; };
+		7C1BE78D28A10DD200935D4A /* HeadquartersModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadquartersModel.swift; sourceTree = "<group>"; };
+		7C1BE78F28A10E0A00935D4A /* Links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Links.swift; sourceTree = "<group>"; };
+		7C3B019428A4D3710087FEC4 /* LaunchListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchListViewModel.swift; sourceTree = "<group>"; };
+		7C3B019628A4DADA0087FEC4 /* LaunchListTableViewCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchListTableViewCellViewModel.swift; sourceTree = "<group>"; };
+		7C3B019828A4F2FC0087FEC4 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
+		7C3B019A28A54EBE0087FEC4 /* ImageViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageViewExtension.swift; sourceTree = "<group>"; };
+		7C3B019C28A587270087FEC4 /* RocketDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RocketDetailViewController.swift; sourceTree = "<group>"; };
+		7C3B019E28A588480087FEC4 /* RocketDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RocketDetailViewModel.swift; sourceTree = "<group>"; };
+		7CF609B528A407EF00A74933 /* Orbit_params.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Orbit_params.swift; sourceTree = "<group>"; };
+		7CF609B628A407EF00A74933 /* First_stage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = First_stage.swift; sourceTree = "<group>"; };
+		7CF609B728A407EF00A74933 /* Payloads.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Payloads.swift; sourceTree = "<group>"; };
+		7CF609B828A407EF00A74933 /* Second_stage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Second_stage.swift; sourceTree = "<group>"; };
+		7CF609B928A407EF00A74933 /* LinksInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinksInfo.swift; sourceTree = "<group>"; };
+		7CF609BA28A407EF00A74933 /* Telemetry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Telemetry.swift; sourceTree = "<group>"; };
+		7CF609BB28A407EF00A74933 /* Cores.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Cores.swift; sourceTree = "<group>"; };
+		7CF609BC28A407EF00A74933 /* LaunchInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LaunchInfo.swift; sourceTree = "<group>"; };
+		7CF609BD28A407EF00A74933 /* Launch_site.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Launch_site.swift; sourceTree = "<group>"; };
+		7CF609BE28A407EF00A74933 /* Fairings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fairings.swift; sourceTree = "<group>"; };
+		7CF609BF28A407EF00A74933 /* Rocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Rocket.swift; sourceTree = "<group>"; };
+		7CF609C028A407EF00A74933 /* Timeline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Timeline.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +159,12 @@
 		7C1BE739289FE25200935D4A /* MySpaceXLaunch */ = {
 			isa = PBXGroup;
 			children = (
+				7C1BE77828A0D75A00935D4A /* Launches */,
+				7C1BE77728A0D74A00935D4A /* CompanyInfo */,
+				7C1BE76A289FE2B200935D4A /* Helpers */,
+				7C1BE76B289FE2C800935D4A /* Networking */,
+				7C1BE76D289FE2EC00935D4A /* ViewModels */,
+				7C1BE76C289FE2E000935D4A /* Views */,
 				7C1BE73A289FE25200935D4A /* AppDelegate.swift */,
 				7C1BE73C289FE25200935D4A /* SceneDelegate.swift */,
 				7C1BE73E289FE25200935D4A /* ViewController.swift */,
@@ -114,6 +180,7 @@
 			isa = PBXGroup;
 			children = (
 				7C1BE751289FE25500935D4A /* MySpaceXLaunchTests.swift */,
+				7C1BE78B28A10A2C00935D4A /* CompanyInfoModelsTest.swift */,
 			);
 			path = MySpaceXLaunchTests;
 			sourceTree = "<group>";
@@ -125,6 +192,125 @@
 				7C1BE75D289FE25500935D4A /* MySpaceXLaunchUITestsLaunchTests.swift */,
 			);
 			path = MySpaceXLaunchUITests;
+			sourceTree = "<group>";
+		};
+		7C1BE76A289FE2B200935D4A /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				7C3B019828A4F2FC0087FEC4 /* DateFormatter.swift */,
+				7C3B019A28A54EBE0087FEC4 /* ImageViewExtension.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		7C1BE76B289FE2C800935D4A /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				7C1BE77528A0C75E00935D4A /* RestAPIService.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+		7C1BE76C289FE2E000935D4A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				7C1BE76F289FE4F100935D4A /* LaunchListViewController.swift */,
+				7C1BE771289FE59E00935D4A /* LaunchDetailViewController.swift */,
+				7C1BE773289FE5CC00935D4A /* LaunchListTableViewCell.swift */,
+				7C3B019C28A587270087FEC4 /* RocketDetailViewController.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		7C1BE76D289FE2EC00935D4A /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				7C3B019428A4D3710087FEC4 /* LaunchListViewModel.swift */,
+				7C3B019628A4DADA0087FEC4 /* LaunchListTableViewCellViewModel.swift */,
+				7C3B019E28A588480087FEC4 /* RocketDetailViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		7C1BE77728A0D74A00935D4A /* CompanyInfo */ = {
+			isa = PBXGroup;
+			children = (
+				7C1BE77B28A0DAEF00935D4A /* Models */,
+				7C1BE77A28A0D77C00935D4A /* Service */,
+				7C1BE77928A0D77000935D4A /* Request */,
+			);
+			path = CompanyInfo;
+			sourceTree = "<group>";
+		};
+		7C1BE77828A0D75A00935D4A /* Launches */ = {
+			isa = PBXGroup;
+			children = (
+				7C1BE77E28A0DB1D00935D4A /* Model */,
+				7C1BE77D28A0DB1200935D4A /* Service */,
+				7C1BE77C28A0DB0500935D4A /* Request */,
+			);
+			path = Launches;
+			sourceTree = "<group>";
+		};
+		7C1BE77928A0D77000935D4A /* Request */ = {
+			isa = PBXGroup;
+			children = (
+				7C1BE77F28A0DCA800935D4A /* CompanyInfoRequest.swift */,
+			);
+			path = Request;
+			sourceTree = "<group>";
+		};
+		7C1BE77A28A0D77C00935D4A /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				7C1BE78128A0DCC700935D4A /* CompanyInfoService.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+		7C1BE77B28A0DAEF00935D4A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				7C1BE78728A0DE7B00935D4A /* CompanyModel.swift */,
+				7C1BE78D28A10DD200935D4A /* HeadquartersModel.swift */,
+				7C1BE78F28A10E0A00935D4A /* Links.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		7C1BE77C28A0DB0500935D4A /* Request */ = {
+			isa = PBXGroup;
+			children = (
+				7C1BE78328A0DCEC00935D4A /* LaunchesRequest.swift */,
+			);
+			path = Request;
+			sourceTree = "<group>";
+		};
+		7C1BE77D28A0DB1200935D4A /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				7C1BE78528A0DD2000935D4A /* LaunchService.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+		7C1BE77E28A0DB1D00935D4A /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				7CF609BB28A407EF00A74933 /* Cores.swift */,
+				7CF609BE28A407EF00A74933 /* Fairings.swift */,
+				7CF609B628A407EF00A74933 /* First_stage.swift */,
+				7CF609BC28A407EF00A74933 /* LaunchInfo.swift */,
+				7CF609BD28A407EF00A74933 /* Launch_site.swift */,
+				7CF609B928A407EF00A74933 /* LinksInfo.swift */,
+				7CF609B528A407EF00A74933 /* Orbit_params.swift */,
+				7CF609B728A407EF00A74933 /* Payloads.swift */,
+				7CF609BF28A407EF00A74933 /* Rocket.swift */,
+				7CF609B828A407EF00A74933 /* Second_stage.swift */,
+				7CF609BA28A407EF00A74933 /* Telemetry.swift */,
+				7CF609C028A407EF00A74933 /* Timeline.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -258,9 +444,38 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C1BE78228A0DCC700935D4A /* CompanyInfoService.swift in Sources */,
+				7C1BE77628A0C75E00935D4A /* RestAPIService.swift in Sources */,
+				7C1BE78E28A10DD200935D4A /* HeadquartersModel.swift in Sources */,
+				7C1BE78428A0DCEC00935D4A /* LaunchesRequest.swift in Sources */,
 				7C1BE73F289FE25200935D4A /* ViewController.swift in Sources */,
+				7C3B019328A4D1DA0087FEC4 /* Links.swift in Sources */,
+				7CF609C828A407EF00A74933 /* LaunchInfo.swift in Sources */,
+				7C3B019928A4F2FC0087FEC4 /* DateFormatter.swift in Sources */,
+				7CF609C428A407EF00A74933 /* Second_stage.swift in Sources */,
 				7C1BE73B289FE25200935D4A /* AppDelegate.swift in Sources */,
+				7CF609CC28A407EF00A74933 /* Timeline.swift in Sources */,
+				7CF609C328A407EF00A74933 /* Payloads.swift in Sources */,
+				7C1BE78828A0DE7B00935D4A /* CompanyModel.swift in Sources */,
+				7CF609CA28A407EF00A74933 /* Fairings.swift in Sources */,
+				7C1BE772289FE59E00935D4A /* LaunchDetailViewController.swift in Sources */,
+				7CF609C128A407EF00A74933 /* Orbit_params.swift in Sources */,
+				7C3B019728A4DADA0087FEC4 /* LaunchListTableViewCellViewModel.swift in Sources */,
 				7C1BE73D289FE25200935D4A /* SceneDelegate.swift in Sources */,
+				7CF609C628A407EF00A74933 /* Telemetry.swift in Sources */,
+				7CF609CB28A407EF00A74933 /* Rocket.swift in Sources */,
+				7C1BE774289FE5CC00935D4A /* LaunchListTableViewCell.swift in Sources */,
+				7CF609C728A407EF00A74933 /* Cores.swift in Sources */,
+				7C3B019B28A54EBE0087FEC4 /* ImageViewExtension.swift in Sources */,
+				7CF609C528A407EF00A74933 /* LinksInfo.swift in Sources */,
+				7C3B019528A4D3710087FEC4 /* LaunchListViewModel.swift in Sources */,
+				7CF609C228A407EF00A74933 /* First_stage.swift in Sources */,
+				7C3B019D28A587270087FEC4 /* RocketDetailViewController.swift in Sources */,
+				7C1BE78628A0DD2000935D4A /* LaunchService.swift in Sources */,
+				7C1BE770289FE4F100935D4A /* LaunchListViewController.swift in Sources */,
+				7C3B019F28A588480087FEC4 /* RocketDetailViewModel.swift in Sources */,
+				7C1BE78028A0DCA800935D4A /* CompanyInfoRequest.swift in Sources */,
+				7CF609C928A407EF00A74933 /* Launch_site.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,6 +484,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7C1BE752289FE25500935D4A /* MySpaceXLaunchTests.swift in Sources */,
+				7C1BE78C28A10A2C00935D4A /* CompanyInfoModelsTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -455,7 +671,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -482,7 +698,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
