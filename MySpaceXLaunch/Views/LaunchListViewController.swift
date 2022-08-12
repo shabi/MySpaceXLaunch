@@ -18,7 +18,8 @@ class LaunchListViewController: UIViewController, UITableViewDataSource, UITable
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        
+        viewModel.fetchLaunches()
+        viewModel.fetchCompanyInfo()
         tableView.delegate = self
         tableView.dataSource = self
         setupListeners()

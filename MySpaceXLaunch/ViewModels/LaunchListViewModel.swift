@@ -22,9 +22,9 @@ class LaunchListViewModel: LaunchListViewModelType {
     let apiService: RestAPIService
     var cancellables = Set<AnyCancellable>()
     
-    private var launchViewModelsSubject: CurrentValueSubject<[LaunchListTableViewCellViewModel], Never> = CurrentValueSubject<[LaunchListTableViewCellViewModel], Never>([])
+    var launchViewModelsSubject: CurrentValueSubject<[LaunchListTableViewCellViewModel], Never> = CurrentValueSubject<[LaunchListTableViewCellViewModel], Never>([])
     
-    private var companyHeaderInfoSubject: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
+    var companyHeaderInfoSubject: PassthroughSubject<String, Never> = PassthroughSubject<String, Never>()
    
     var companyHeaderInfo: AnyPublisher<String, Never> {
         companyHeaderInfoSubject.eraseToAnyPublisher()
@@ -36,8 +36,6 @@ class LaunchListViewModel: LaunchListViewModelType {
     
     init(apiService: RestAPIService = RestAPIServiceProvider()) {
         self.apiService = apiService
-        fetchLaunches()
-        fetchCompanyInfo()
     }
 
     func fetchLaunches() {
