@@ -31,172 +31,101 @@ class MySpaceXLaunchUITestsLaunchTests: XCTestCase {
     }
 }
 
-
 import { ChainablePromiseElement } from 'webdriverio';
 
-export class BaseAccount {
-    protected driver: WebdriverIO.Browser;
-
-    constructor(driver: WebdriverIO.Browser) {
-        this.driver = driver;
-    }
+/**
+ * Base class for common reusable actions and properties.
+ */
+abstract class BaseAccount {
+    /**
+     * Abstract method to get text by identifier.
+     */
+    public abstract getTextById(identifier: string): Promise<string>;
 
     /**
-     * Find an element using Accessibility ID.
-     * @param id - The accessibility ID of the element
-     * @returns The WebdriverIO element
+     * Abstract method to get an element by accessibility ID.
      */
-    protected async getElementById(id: string): Promise<ChainablePromiseElement<WebdriverIO.Element>> {
-        return await this.driver.$(`~${id}`); // Accessibility ID (~)
-    }
+    public abstract getElementById(identifier: string): ChainablePromiseElement<WebdriverIO.Element>;
 
     /**
-     * Get text from an element using Accessibility ID.
-     * @param id - The accessibility ID
-     * @returns Text content of the element
+     * Verifies multiple static values dynamically.
      */
-    protected async getTextById(id: string): Promise<string> {
-        const element = await this.getElementById(id);
-        return await element.getText();
-    }
-}
+    public async verifyValues(expectedDetails: { [key: string]: string }) {
+        for (const [identifier, expectedValue] of Object.entries(expectedDetails)) {
+            const actualText = await this.getTextById(identifier);
 
+            console.log(`🔍 Checking: '${identifier}' → Expected: '${expectedValue}', Found: '${actualText}'`);
 
-import { BaseAccount } from './BaseAccount';
-
-export class AccountPage extends BaseAccount {
-    private accountNameId = 'Account name: ABC';
-    private accountBalanceId = 'Account balance: 8988666';
-    private accountNumberId = 'Account number: 8988666';
-
-    constructor(driver: WebdriverIO.Browser) {
-        super(driver);
-    }
-
-    /**
-     * Navigates to the account card screen.
-     */
-    async navigateToAccountCard() {
-        const navigateButton = await this.getElementById('GoToAccountCard');
-        await navigateButton.click();
-    }
-
-    /**
-     * Verifies account details displayed on the card.
-     */
-    async verifyAccountDetails(expectedDetails: { [key: string]: string }) {
-        for (const [label, expectedValue] of Object.entries(expectedDetails)) {
-            const elementId = `${label}: ${expectedValue}`;
-            const actualText = await this.getTextById(elementId);
-
-            if (actualText !== elementId) {
-                throw new Error(`Expected '${elementId}', but found '${actualText}'`);
+            if (actualText !== expectedValue) {
+                throw new Error(`❌ Mismatch for '${identifier}': Expected '${expectedValue}', but found '${actualText}'`);
             }
         }
     }
 }
 
-
-import { Given, When, Then } from '@cucumber/cucumber';
-import { remote } from 'webdriverio';
-import { AccountPage } from '../pages/AccountPage';
-
-let driver: WebdriverIO.Browser;
-let accountPage: AccountPage;
-
-Given('user is logged into the app', async function () {
-    driver = await remote({
-        capabilities: {
-            platformName: 'iOS',
-            deviceName: 'iPhone 14 Pro',
-            automationName: 'XCUITest',
-            app: '/path/to/your.app',
-        }
-    });
-
-    accountPage = new AccountPage(driver);
-    await driver.launchApp();
-});
-
-When('the user navigates to the account card', async function () {
-    await accountPage.navigateToAccountCard();
-});
-
-Then('user should see the following details:', async function (dataTable) {
-    const expectedDetails: { [key: string]: string } = {};
-    dataTable.raw().forEach(([label, value]) => {
-        expectedDetails[label] = value;
-    });
-
-    await accountPage.verifyAccountDetails(expectedDetails);
-});
-
-
-///////
-import dotenv from 'dotenv';
-dotenv.config();
-import { ChainablePromiseArray, ChainablePromiseElement } from 'webdriverio';
-import { logger } from '../../utils/logger.js';
-
-/**
- * sub page containing specific selectors and methods for a specific page
- */
-
-abstract class BaseAccount {
-    public abstract get btnShare(): ChainablePromiseElement<WebdriverIO.Element>;
-   
-
-
-    public async share() {
-        await this.btnShare.click();
-    }
-    
-}
-
 export default BaseAccount;
 
-import { $ } from '@wdio/globals'
+
+
+import { $ } from '@wdio/globals';
 import BaseAccount from '../base/BaseAccount.js';
-import { ChainablePromiseElement, } from 'webdriverio';
-import { UiSelectorBuilderiOS } from '../../utils/UISelectorBuilderIOS.js';
+import { ChainablePromiseElement } from 'webdriverio';
 
+/**
+ * iOS-specific implementation for the account page.
+ */
 class IosAccountPage extends BaseAccount {
-    public selectorBuilderiOS: UiSelectorBuilderiOS = new UiSelectorBuilderiOS();
-    
-
-   
-    public get btnShare() {
-        return $('~shareIcon');
+    /**
+     * Retrieves an element by its accessibility ID.
+     */
+    public getElementById(identifier: string): ChainablePromiseElement<WebdriverIO.Element> {
+        return $(`~${identifier}`);
     }
 
-
+    /**
+     * Retrieves text from an element by its accessibility ID.
+     */
+    public async getTextById(identifier: string): Promise<string> {
+        const element = await this.getElementById(identifier);
+        return await element.getText();
+    }
 }
 
 export default IosAccountPage;
 
 
+
+
 import dotenv from 'dotenv';
 dotenv.config();
-import { When, Then, Given, DataTable } from '@wdio/cucumber-framework';
+import { Given, When, Then, DataTable } from '@wdio/cucumber-framework';
 import { getPage } from '../../pageobjects/base/Baseutil.js';
-import IosAccountPage from '../../pageobjects/ios/ios.account.page.js';
-import AndroidLoginPage from '../../pageobjects/android/android.login.page.js';
+import IosAccountPage from '../../pageobjects/ios/IosAccountPage.js';
 
-// const AccountPage = getPage({ ios: IosAccountPage, android: AndroidLoginPage });
-
+// Get the appropriate page object (iOS or Android)
 const AccountPage = getPage({ ios: IosAccountPage, android: IosAccountPage });
 
-When("I click on Share icon", async function (this: any) {
+Given('user is logged into the app', async function () {
     await AccountPage.launch();
 });
 
-Then("the ShareSheet should be displayed", async function (this: any) {
-    await AccountPage.share();
+When('the user navigates to the account card', async function () {
+    await AccountPage.navigateToAccountCard();
 });
 
-/////
+Then('user should see the following values:', async function (dataTable: DataTable) {
+    const expectedDetails: { [key: string]: string } = {};
 
-When("The user navigates to Accounts tab from the bottom menu options", async function (this: any) {
-    await AccountPage.launch();
+    // Convert Cucumber DataTable to an object
+    dataTable.raw().forEach(([identifier, value]) => {
+        expectedDetails[identifier] = value;
+    });
+
+    await AccountPage.verifyValues(expectedDetails);
 });
+
+
+export function getPage({ ios, android }: { ios: any; android: any }) {
+    return process.env.PLATFORM === 'ios' ? new ios() : new android();
+}
 
