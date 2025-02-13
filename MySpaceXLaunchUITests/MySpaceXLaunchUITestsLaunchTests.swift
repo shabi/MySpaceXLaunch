@@ -131,3 +131,72 @@ Then('user should see the following details:', async function (dataTable) {
     await accountPage.verifyAccountDetails(expectedDetails);
 });
 
+
+///////
+import dotenv from 'dotenv';
+dotenv.config();
+import { ChainablePromiseArray, ChainablePromiseElement } from 'webdriverio';
+import { logger } from '../../utils/logger.js';
+
+/**
+ * sub page containing specific selectors and methods for a specific page
+ */
+
+abstract class BaseAccount {
+    public abstract get btnShare(): ChainablePromiseElement<WebdriverIO.Element>;
+   
+
+
+    public async share() {
+        await this.btnShare.click();
+    }
+    
+}
+
+export default BaseAccount;
+
+import { $ } from '@wdio/globals'
+import BaseAccount from '../base/BaseAccount.js';
+import { ChainablePromiseElement, } from 'webdriverio';
+import { UiSelectorBuilderiOS } from '../../utils/UISelectorBuilderIOS.js';
+
+class IosAccountPage extends BaseAccount {
+    public selectorBuilderiOS: UiSelectorBuilderiOS = new UiSelectorBuilderiOS();
+    
+
+   
+    public get btnShare() {
+        return $('~shareIcon');
+    }
+
+
+}
+
+export default IosAccountPage;
+
+
+import dotenv from 'dotenv';
+dotenv.config();
+import { When, Then, Given, DataTable } from '@wdio/cucumber-framework';
+import { getPage } from '../../pageobjects/base/Baseutil.js';
+import IosAccountPage from '../../pageobjects/ios/ios.account.page.js';
+import AndroidLoginPage from '../../pageobjects/android/android.login.page.js';
+
+// const AccountPage = getPage({ ios: IosAccountPage, android: AndroidLoginPage });
+
+const AccountPage = getPage({ ios: IosAccountPage, android: IosAccountPage });
+
+When("I click on Share icon", async function (this: any) {
+    await AccountPage.launch();
+});
+
+Then("the ShareSheet should be displayed", async function (this: any) {
+    await AccountPage.share();
+});
+
+/////
+
+When("The user navigates to Accounts tab from the bottom menu options", async function (this: any) {
+    await AccountPage.launch();
+});
+
