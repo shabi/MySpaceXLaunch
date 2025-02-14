@@ -243,3 +243,76 @@ class IosAccountPage {
 }
 
 export default new IosAccountPage();
+
+
+const testData: Record<string, Record<string, string>> = {
+    TEST1234: {
+        accountName: "TBS Smart Business Demo AC",
+        accountBalance: "850,987.20 AED",
+        accountNumber: "89373772394",
+        accountType: "Call account",
+        currency: "AED",
+        interestRate: "1.5%",
+        accountStatus: "Active",
+        iban: "AE890001234567890123456"
+    },
+    TRUNC67: {
+        accountName: "Transaction Banking Business On(...)",
+        accountBalance: "72,000.60 AED",
+        accountNumber: "1011000915221",
+        accountType: "CURRENT ACCOUNT",
+        currency: "AED",
+        interestRate: "2.0%",
+        accountStatus: "Active",
+        iban: "AE770012345678901234567"
+    },
+    MillionBalance: {
+        accountName: "Transaction Banking Business",
+        accountBalance: "1.12M AED",
+        accountNumber: "4011000915200002",
+        accountType: "LC SIGHT",
+        currency: "AED",
+        interestRate: "1.0%",
+        accountStatus: "Closed",
+        iban: "AE560045678901234567890"
+    },
+    "1TestAccounttype": {
+        accountName: "AAA YMNAA XXC",
+        accountBalance: "120,430.6723 AED",
+        accountNumber: "1021000915202",
+        accountType: "CURRENT ACCOUNT FOREIGN CCY",
+        currency: "USD",
+        interestRate: "1.8%",
+        accountStatus: "Pending",
+        iban: "AE230078901234567890123"
+    }
+};
+
+// ✅ Set Data in `Given` Step
+Given("user {string} is logged into the Mobile App", async function (userId) {
+    this.userId = userId; // Store the userId for later use
+    this.userTestData = testData[userId]; // Assign user-specific data
+
+    if (!this.userTestData) {
+        throw new Error(`Test data for user ${userId} not found!`);
+    }
+
+    // Set all text values for the user
+    for (const [key, value] of Object.entries(this.userTestData)) {
+        await IosAccountPage.setTextById(key, value);
+    }
+});
+
+When("the user navigates to the Accounts tab", async function () {
+    await IosAccountPage.navigateToAccountsTab();
+});
+
+Then("the user should see the following values in the blue card:", async function (dataTable: DataTable) {
+    const expectedData = dataTable.rowsHash(); // Convert DataTable to key-value object
+
+    for (const [identifier, expectedValue] of Object.entries(expectedData)) {
+        const actualValue = await IosAccountPage.getTextById(identifier);
+        expect(actualValue).toEqual(expectedValue, `Mismatch for ${identifier}`);
+    }
+});
+
