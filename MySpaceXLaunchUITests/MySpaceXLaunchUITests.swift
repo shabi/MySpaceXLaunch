@@ -40,3 +40,204 @@ class MySpaceXLaunchUITests: XCTestCase {
         }
     }
 }
+
+
+
+
+Skip to:
+
+Skip to Jira Navigation
+Skip to Side Navigation
+Skip to Main Content
+
+Custom Jira logo
+
+Your work
+
+Projects
+
+Filters
+
+Dashboards
+
+Teams
+
+Apps
+
+Create
+Search
+
+9+
+
+
+
+
+TB Account Services
+Software project
+Menu
+PLANNING
+DEVELOPMENT
+Collaborate on pages in real-time
+Try Confluence
+
+You're in a company-managed project
+Learn more
+
+
+Projects
+TB Account Services
+
+TBBOXACC-135
+
+TBBOXACC-334
+
+
+Feature file creation
+
+Add
+
+Apps
+Description
+
+Feature file creation
+
+Attachments
+1
+
+
+Open TBBOXACC-71.rtf
+TBBOXACC-71.rtf
+TBBOXACC-71.rtf
+06 Feb 2025, 11:56 am
+
+Activity
+Show:
+
+All
+
+Comments
+
+History
+
+Work log
+
+Newest first
+
+Add a comment…
+Pro tip: press 
+M
+ to comment
+
+Done
+
+Actions
+
+Details
+Assignee
+
+
+
+Nivedita Amit Save
+Assign to me
+Reporter
+
+
+
+Shabi Haider Naqvi
+Development
+
+
+Create branch
+
+Create commit
+Labels
+
+
+None
+Impediment
+
+
+None
+Sprint
+
+
+TBBOXACC.2025.Q1.S2
+
++1
+Priority
+
+
+
+Medium
+BigPicture - Skills
+Open BigPicture - Skills
+
+More fields
+Original estimate, Time tracking, Components, Due date
+
+Automation
+
+Rule executions
+Created 30 January 2025 at 12:03
+Updated 6 February 2025 at 10:26
+Configure
+
+Quickstart
+
+
+TBBOXACC-71.rtf
+document · 49 KB
+
+Feature: Account Services-Mobile: View Balance and Share Account details
+As a user
+I want to view the account balance in Accounts tab, use share icon in BOX Mobile App,
+so that I can share my account details.
+@Display Account Details
+Scenario: Display Account Details
+Given user ‘TEST1234’ is logged into the Mobile App
+When The user navigates to Accounts tab from the bottom menu options
+Then The user should be able to view below details in the blue card
+Account Name: TBS Smart Business Demo AC
+Account Balance: 850,987.20 AED
+Account Number: 89373772394
+Account type: Call account
+@TruncateAccountName
+Scenario: Truncate Account Name display when long
+Given user ‘TRUNC67’ is logged into the Mobile App
+When The user navigates to Accounts tab from the bottom menu options
+Then The user should be able to view below details in the blue card
+Account Name: Transaction Banking Business On(...)
+Account Balance: 72,000.60 AED
+Account Number: 1011000915221
+Account type: CURRENT ACCOUNT
+@BalanceinMillion
+Scenario: Convert Balance in Million
+Given user ‘MillionBalance’ is logged into the Mobile App
+When The user navigates to Accounts tab from the bottom menu options
+Then The user should be able to view below details in the blue card
+Account Name: Transaction Banking Business
+Account Balance: 1.12M AED
+Account Number: 4011000915200002
+Account type: LC SIGHT
+@LongAccounttype
+Scenario: Account type string is long
+Given user ‘1TestAccounttype’ is logged into the Mobile App
+When The user navigates to Accounts tab from the bottom menu options
+Then The user should be able to view below details in the blue card
+Account Name: AAA YMNAA XXC
+Account Balance: 120,430.6723 AED
+Account Number: 1021000915202
+Account type: CURRENT ACCOUNT FOREIGN CCY
+@Shareicon
+Scenario: Share icon
+Given user ‘Share@icon’ is logged into the Mobile App
+When The user clicks on the share icon
+Then The Social share options should be displayed as per the User's mobile device
+And options to share the Account details will be displayed as below
+Account Number: 89373772394
+Account Name: TBS Smart Business Demo AC
+Bank Name: Emirates NBD
+
+
+199 %
+
