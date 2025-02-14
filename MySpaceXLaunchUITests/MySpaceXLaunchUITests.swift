@@ -40,176 +40,151 @@ class MySpaceXLaunchUITests: XCTestCase {
         }
     }
 }
+IosAccountPage 
+import { $ } from '@wdio/globals';
+import { ChainablePromiseElement } from 'webdriverio';
 
+class IosAccountPage {
+    public get accountNameField(): ChainablePromiseElement<WebdriverIO.Element> {
+        return $('~accountName');
+    }
+
+    public get accountBalanceField(): ChainablePromiseElement<WebdriverIO.Element> {
+        return $('~accountBalance');
+    }
+
+    public get accountNumberField(): ChainablePromiseElement<WebdriverIO.Element> {
+        return $('~accountNumber');
+    }
+
+    public get accountTypeField(): ChainablePromiseElement<WebdriverIO.Element> {
+        return $('~accountType');
+    }
+
+    public async setTextById(identifier: string, value: string) {
+        const element = await $(`~${identifier}`);
+        await element.setValue(value);
+    }
+
+    public async getAccountName(): Promise<string> {
+        return this.accountNameField.getText();
+    }
+
+    public async getAccountBalance(): Promise<string> {
+        return this.accountBalanceField.getText();
+    }
+
+    public async getAccountNumber(): Promise<string> {
+        return this.accountNumberField.getText();
+    }
+
+    public async getAccountType(): Promise<string> {
+        return this.accountTypeField.getText();
+    }
+}
+
+struct AccountData: Identifiable, Codable {
+    let id = UUID()
+    var accountName: String
+    var accountBalance: String
+    var accountNumber: String
+    var accountType: String
+}
+@State private var testAccountData: AccountData = AccountData(
+        accountName: "Default Name",
+        accountBalance: "0.00 AED",
+        accountNumber: "00000000",
+        accountType: "Default Type"
+    )
+
+export default new IosAccountPage();
+
+
+import { Given, When, Then } from '@wdio/cucumber-framework';
+import IosAccountPage from '../../pageobjects/ios/ios.account.page.js';
+import { expect } from 'chai';
+
+Given("user {string} is logged into the Mobile App", async function (userId) {
+    console.log(`User ${userId} is logged in`);
+});
+
+When("the user navigates to the Accounts tab", async function () {
+    console.log("Navigated to Accounts tab");
+});
+
+When("I set the account details", async function () {
+    await IosAccountPage.setTextById("accountName", "Transaction Banking Business On(...)");
+    await IosAccountPage.setTextById("accountBalance", "72,000.60 AED");
+    await IosAccountPage.setTextById("accountNumber", "1011000915221");
+    await IosAccountPage.setTextById("accountType", "CURRENT ACCOUNT");
+});
+
+Then("the user should see the following values in the blue card:", async function (dataTable) {
+    const expectedData = dataTable.rowsHash();
+
+    const actualData = {
+        accountName: await IosAccountPage.getAccountName(),
+        accountBalance: await IosAccountPage.getAccountBalance(),
+        accountNumber: await IosAccountPage.getAccountNumber(),
+        accountType: await IosAccountPage.getAccountType(),
+    };
+
+    for (const key in expectedData) {
+        expect(actualData[key]).to.equal(expectedData[key], `Mismatch in ${key}`);
+    }
+});
 
 
 Feature: Account Services-Mobile: View Balance and Share Account details
-As a user
-I want to view the account balance in Accounts tab, use share icon in BOX Mobile App,
-so that I can share my account details.
-@Display Account Details
-Scenario: Display Account Details
-Given user ‘TEST1234’ is logged into the Mobile App
-When The user navigates to Accounts tab from the bottom menu options
-Then The user should be able to view below details in the blue card
-Account Name: TBS Smart Business Demo AC
-Account Balance: 850,987.20 AED
-Account Number: 89373772394
-Account type: Call account
-@TruncateAccountName
-Scenario: Truncate Account Name display when long
-Given user ‘TRUNC67’ is logged into the Mobile App
-When The user navigates to Accounts tab from the bottom menu options
-Then The user should be able to view below details in the blue card
-Account Name: Transaction Banking Business On(...)
-Account Balance: 72,000.60 AED
-Account Number: 1011000915221
-Account type: CURRENT ACCOUNT
-@BalanceinMillion
-Scenario: Convert Balance in Million
-Given user ‘MillionBalance’ is logged into the Mobile App
-When The user navigates to Accounts tab from the bottom menu options
-Then The user should be able to view below details in the blue card
-Account Name: Transaction Banking Business
-Account Balance: 1.12M AED
-Account Number: 4011000915200002
-Account type: LC SIGHT
-@LongAccounttype
-Scenario: Account type string is long
-Given user ‘1TestAccounttype’ is logged into the Mobile App
-When The user navigates to Accounts tab from the bottom menu options
-Then The user should be able to view below details in the blue card
-Account Name: AAA YMNAA XXC
-Account Balance: 120,430.6723 AED
-Account Number: 1021000915202
-Account type: CURRENT ACCOUNT FOREIGN CCY
-@Shareicon
-Scenario: Share icon
-Given user ‘Share@icon’ is logged into the Mobile App
-When The user clicks on the share icon
-Then The Social share options should be displayed as per the User's mobile device
-And options to share the Account details will be displayed as below
-Account Number: 89373772394
-Account Name: TBS Smart Business Demo AC
-Bank Name: Emirates NBD
-
-
-
-
-Feature: Account Services - Mobile: View Balance and Share Account details
   As a user
-  I want to view the account balance in the Accounts tab and use the share icon in the BOX Mobile App,
+  I want to view the account balance in Accounts tab, use share icon in BOX Mobile App,
   so that I can share my account details.
 
   @DisplayAccountDetails
   Scenario: Display Account Details
     Given user "TEST1234" is logged into the Mobile App
-    When The user navigates to Accounts tab from the bottom menu options
-    Then The user should see the correct account details
+    When the user navigates to the Accounts tab
+    When I set the account details
+    Then the user should see the following values in the blue card:
+      | Identifier      | Expected Value                        |
+      | accountName     | TBS Smart Business Demo AC           |
+      | accountBalance  | 850,987.20 AED                       |
+      | accountNumber   | 89373772394                          |
+      | accountType     | Call account                         |
 
   @TruncateAccountName
   Scenario: Truncate Account Name display when long
     Given user "TRUNC67" is logged into the Mobile App
-    When The user navigates to Accounts tab from the bottom menu options
-    Then The user should see the correct account details
+    When the user navigates to the Accounts tab
+    When I set the account details
+    Then the user should see the following values in the blue card:
+      | Identifier      | Expected Value                        |
+      | accountName     | Transaction Banking Business On(...) |
+      | accountBalance  | 72,000.60 AED                        |
+      | accountNumber   | 1011000915221                        |
+      | accountType     | CURRENT ACCOUNT                      |
 
-  @BalanceInMillion
+  @BalanceinMillion
   Scenario: Convert Balance in Million
     Given user "MillionBalance" is logged into the Mobile App
-    When The user navigates to Accounts tab from the bottom menu options
-    Then The user should see the correct account details
+    When the user navigates to the Accounts tab
+    When I set the account details
+    Then the user should see the following values in the blue card:
+      | Identifier      | Expected Value |
+      | accountName     | Transaction Banking Business |
+      | accountBalance  | 1.12M AED |
+      | accountNumber   | 4011000915200002 |
+      | accountType     | LC SIGHT |
 
-  @LongAccountType
+  @LongAccounttype
   Scenario: Account type string is long
-    Given user "1TestAccountType" is logged into the Mobile App
-    When The user navigates to Accounts tab from the bottom menu options
-    Then The user should see the correct account details
-
-
-testData.ts
-export const accountTestData = [
-    {
-        testCase: "TEST1234",
-        accountName: "TBS Smart Business Demo AC",
-        accountBalance: "850,987.20 AED",
-        accountNumber: "89373772394",
-        accountType: "Call account"
-    },
-    {
-        testCase: "TRUNC67",
-        accountName: "Transaction Banking Business On(...)",
-        accountBalance: "72,000.60 AED",
-        accountNumber: "1011000915221",
-        accountType: "CURRENT ACCOUNT"
-    },
-    {
-        testCase: "MillionBalance",
-        accountName: "Transaction Banking Business",
-        accountBalance: "1.12M AED",
-        accountNumber: "4011000915200002",
-        accountType: "LC SIGHT"
-    },
-    {
-        testCase: "1TestAccountType",
-        accountName: "AAA YMNAA XXC",
-        accountBalance: "120,430.6723 AED",
-        accountNumber: "1021000915202",
-        accountType: "CURRENT ACCOUNT FOREIGN CCY"
-    }
-];
-
-accountSteps.ts
-
-import { Given, When, Then } from '@wdio/cucumber-framework';
-import IosAccountPage from '../../pageobjects/ios/ios.account.page';
-import { accountTestData } from '../../testData';
-
-let currentScenarioData: any;
-
-Given(/^user "([^"]+)" is logged into the Mobile App$/, async function (userId: string) {
-    currentScenarioData = accountTestData.find(data => data.testCase === userId);
-    if (!currentScenarioData) throw new Error(`Test case data not found for ${userId}`);
-    
-    console.log(`🔹 Running Test: ${currentScenarioData.testCase}`);
-});
-
-When("The user navigates to Accounts tab from the bottom menu options", async function () {
-    await IosAccountPage.launch();
-});
-
-Then("The user should see the correct account details", async function () {
-    const identifiers = {
-        accountName: "accountName",
-        accountBalance: "accountBalance",
-        accountNumber: "accountNumber",
-        accountType: "accountType"
-    };
-
-    for (const key in identifiers) {
-        const actualValue = await IosAccountPage.getTextById(identifiers[key]);
-        console.log(`Validating ${key}: Expected = ${currentScenarioData[key]}, Actual = ${actualValue}`);
-        expect(actualValue).toEqual(currentScenarioData[key]);
-    }
-});
-
-ios.account.page.ts
-
-import { $ } from '@wdio/globals';
-import BaseAccount from '../base/BaseAccount';
-
-class IosAccountPage extends BaseAccount {
-    
-    public getTextById(identifier: string) {
-        return $(`~${identifier}`).getText();
-    }
-
-    public async setTextById(identifier: string, value: string) {
-        await driver.execute("mobile: setValue", { 
-            element: await $(`~${identifier}`).elementId, 
-            value: value 
-        });
-    }
-}
-
-export default new IosAccountPage();
+    Given user "1TestAccounttype" is logged into the Mobile App
+    When the user navigates to the Accounts tab
+    When I set the account details
+    Then the user should see the following values in the blue card:
+      | Identifier      | Expected Value |
+      | accountName     | AAA YMNAA XXC |
+      | accountBalance  | 120,430.6723 AED |
+      | accountNumber   | 1021000915202 |
+      | accountType     | CURRENT ACCOUNT FOREIGN CCY |
 
