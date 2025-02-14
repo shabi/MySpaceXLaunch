@@ -43,151 +43,6 @@ class MySpaceXLaunchUITests: XCTestCase {
 
 
 
-
-Skip to:
-
-Skip to Jira Navigation
-Skip to Side Navigation
-Skip to Main Content
-
-Custom Jira logo
-
-Your work
-
-Projects
-
-Filters
-
-Dashboards
-
-Teams
-
-Apps
-
-Create
-Search
-
-9+
-
-
-
-
-TB Account Services
-Software project
-Menu
-PLANNING
-DEVELOPMENT
-Collaborate on pages in real-time
-Try Confluence
-
-You're in a company-managed project
-Learn more
-
-
-Projects
-TB Account Services
-
-TBBOXACC-135
-
-TBBOXACC-334
-
-
-Feature file creation
-
-Add
-
-Apps
-Description
-
-Feature file creation
-
-Attachments
-1
-
-
-Open TBBOXACC-71.rtf
-TBBOXACC-71.rtf
-TBBOXACC-71.rtf
-06 Feb 2025, 11:56 am
-
-Activity
-Show:
-
-All
-
-Comments
-
-History
-
-Work log
-
-Newest first
-
-Add a comment…
-Pro tip: press 
-M
- to comment
-
-Done
-
-Actions
-
-Details
-Assignee
-
-
-
-Nivedita Amit Save
-Assign to me
-Reporter
-
-
-
-Shabi Haider Naqvi
-Development
-
-
-Create branch
-
-Create commit
-Labels
-
-
-None
-Impediment
-
-
-None
-Sprint
-
-
-TBBOXACC.2025.Q1.S2
-
-+1
-Priority
-
-
-
-Medium
-BigPicture - Skills
-Open BigPicture - Skills
-
-More fields
-Original estimate, Time tracking, Components, Due date
-
-Automation
-
-Rule executions
-Created 30 January 2025 at 12:03
-Updated 6 February 2025 at 10:26
-Configure
-
-Quickstart
-
-
-TBBOXACC-71.rtf
-document · 49 KB
-
 Feature: Account Services-Mobile: View Balance and Share Account details
 As a user
 I want to view the account balance in Accounts tab, use share icon in BOX Mobile App,
@@ -239,5 +94,35 @@ Account Name: TBS Smart Business Demo AC
 Bank Name: Emirates NBD
 
 
-199 %
+
+
+Feature: Account Services - Mobile: View Balance and Share Account details
+  As a user
+  I want to view the account balance in the Accounts tab and use the share icon in the BOX Mobile App,
+  so that I can share my account details.
+
+  @DisplayAccountDetails
+  Scenario: Display Account Details
+    Given user "TEST1234" is logged into the Mobile App
+    When The user navigates to Accounts tab from the bottom menu options
+    Then The user should see the correct account details
+
+  @TruncateAccountName
+  Scenario: Truncate Account Name display when long
+    Given user "TRUNC67" is logged into the Mobile App
+    When The user navigates to Accounts tab from the bottom menu options
+    Then The user should see the correct account details
+
+  @BalanceInMillion
+  Scenario: Convert Balance in Million
+    Given user "MillionBalance" is logged into the Mobile App
+    When The user navigates to Accounts tab from the bottom menu options
+    Then The user should see the correct account details
+
+  @LongAccountType
+  Scenario: Account type string is long
+    Given user "1TestAccountType" is logged into the Mobile App
+    When The user navigates to Accounts tab from the bottom menu options
+    Then The user should see the correct account details
+
 
