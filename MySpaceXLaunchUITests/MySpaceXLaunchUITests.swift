@@ -126,3 +126,90 @@ Feature: Account Services - Mobile: View Balance and Share Account details
     Then The user should see the correct account details
 
 
+testData.ts
+export const accountTestData = [
+    {
+        testCase: "TEST1234",
+        accountName: "TBS Smart Business Demo AC",
+        accountBalance: "850,987.20 AED",
+        accountNumber: "89373772394",
+        accountType: "Call account"
+    },
+    {
+        testCase: "TRUNC67",
+        accountName: "Transaction Banking Business On(...)",
+        accountBalance: "72,000.60 AED",
+        accountNumber: "1011000915221",
+        accountType: "CURRENT ACCOUNT"
+    },
+    {
+        testCase: "MillionBalance",
+        accountName: "Transaction Banking Business",
+        accountBalance: "1.12M AED",
+        accountNumber: "4011000915200002",
+        accountType: "LC SIGHT"
+    },
+    {
+        testCase: "1TestAccountType",
+        accountName: "AAA YMNAA XXC",
+        accountBalance: "120,430.6723 AED",
+        accountNumber: "1021000915202",
+        accountType: "CURRENT ACCOUNT FOREIGN CCY"
+    }
+];
+
+accountSteps.ts
+
+import { Given, When, Then } from '@wdio/cucumber-framework';
+import IosAccountPage from '../../pageobjects/ios/ios.account.page';
+import { accountTestData } from '../../testData';
+
+let currentScenarioData: any;
+
+Given(/^user "([^"]+)" is logged into the Mobile App$/, async function (userId: string) {
+    currentScenarioData = accountTestData.find(data => data.testCase === userId);
+    if (!currentScenarioData) throw new Error(`Test case data not found for ${userId}`);
+    
+    console.log(`🔹 Running Test: ${currentScenarioData.testCase}`);
+});
+
+When("The user navigates to Accounts tab from the bottom menu options", async function () {
+    await IosAccountPage.launch();
+});
+
+Then("The user should see the correct account details", async function () {
+    const identifiers = {
+        accountName: "accountName",
+        accountBalance: "accountBalance",
+        accountNumber: "accountNumber",
+        accountType: "accountType"
+    };
+
+    for (const key in identifiers) {
+        const actualValue = await IosAccountPage.getTextById(identifiers[key]);
+        console.log(`Validating ${key}: Expected = ${currentScenarioData[key]}, Actual = ${actualValue}`);
+        expect(actualValue).toEqual(currentScenarioData[key]);
+    }
+});
+
+ios.account.page.ts
+
+import { $ } from '@wdio/globals';
+import BaseAccount from '../base/BaseAccount';
+
+class IosAccountPage extends BaseAccount {
+    
+    public getTextById(identifier: string) {
+        return $(`~${identifier}`).getText();
+    }
+
+    public async setTextById(identifier: string, value: string) {
+        await driver.execute("mobile: setValue", { 
+            element: await $(`~${identifier}`).elementId, 
+            value: value 
+        });
+    }
+}
+
+export default new IosAccountPage();
+
