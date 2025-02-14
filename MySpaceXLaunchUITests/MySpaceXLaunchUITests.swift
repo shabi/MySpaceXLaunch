@@ -136,55 +136,110 @@ Then("the user should see the following values in the blue card:", async functio
 
 
 Feature: Account Services-Mobile: View Balance and Share Account details
-  As a user
-  I want to view the account balance in Accounts tab, use share icon in BOX Mobile App,
-  so that I can share my account details.
 
-  @DisplayAccountDetails
-  Scenario: Display Account Details
-    Given user "TEST1234" is logged into the Mobile App
-    When the user navigates to the Accounts tab
-    When I set the account details
-    Then the user should see the following values in the blue card:
-      | Identifier      | Expected Value                        |
-      | accountName     | TBS Smart Business Demo AC           |
-      | accountBalance  | 850,987.20 AED                       |
-      | accountNumber   | 89373772394                          |
-      | accountType     | Call account                         |
+@DisplayAccountDetails
+Scenario: Display Account Details
+  Given user "TEST1234" is logged into the Mobile App
+  When the user navigates to the Accounts tab
+  Then the user should see the following values in the blue card:
+    | Identifier      | Expected Value            |
+    | accountName     | TBS Smart Business Demo AC |
+    | accountBalance  | 850,987.20 AED             |
+    | accountNumber   | 89373772394                |
+    | accountType     | Call account               |
+    | currency        | AED                         |
+    | interestRate    | 1.5%                        |
+    | accountStatus   | Active                      |
+    | iban           | AE890001234567890123456     |
 
-  @TruncateAccountName
-  Scenario: Truncate Account Name display when long
-    Given user "TRUNC67" is logged into the Mobile App
-    When the user navigates to the Accounts tab
-    When I set the account details
-    Then the user should see the following values in the blue card:
-      | Identifier      | Expected Value                        |
-      | accountName     | Transaction Banking Business On(...) |
-      | accountBalance  | 72,000.60 AED                        |
-      | accountNumber   | 1011000915221                        |
-      | accountType     | CURRENT ACCOUNT                      |
+@TruncateAccountName
+Scenario: Truncate Account Name display when long
+  Given user "TRUNC67" is logged into the Mobile App
+  When the user navigates to the Accounts tab
+  Then the user should see the following values in the blue card:
+    | Identifier      | Expected Value                          |
+    | accountName     | Transaction Banking Business On(...)   |
+    | accountBalance  | 72,000.60 AED                          |
+    | accountNumber   | 1011000915221                          |
+    | accountType     | CURRENT ACCOUNT                        |
+    | currency        | AED                                    |
+    | interestRate    | 2.0%                                   |
+    | accountStatus   | Active                                 |
+    | iban           | AE770012345678901234567                |
 
-  @BalanceinMillion
-  Scenario: Convert Balance in Million
-    Given user "MillionBalance" is logged into the Mobile App
-    When the user navigates to the Accounts tab
-    When I set the account details
-    Then the user should see the following values in the blue card:
-      | Identifier      | Expected Value |
-      | accountName     | Transaction Banking Business |
-      | accountBalance  | 1.12M AED |
-      | accountNumber   | 4011000915200002 |
-      | accountType     | LC SIGHT |
+@BalanceinMillion
+Scenario: Convert Balance in Million
+  Given user "MillionBalance" is logged into the Mobile App
+  When the user navigates to the Accounts tab
+  Then the user should see the following values in the blue card:
+    | Identifier      | Expected Value |
+    | accountName     | Transaction Banking Business |
+    | accountBalance  | 1.12M AED |
+    | accountNumber   | 4011000915200002 |
+    | accountType     | LC SIGHT |
+    | currency        | AED |
+    | interestRate    | 1.0% |
+    | accountStatus   | Closed |
+    | iban           | AE560045678901234567890 |
 
-  @LongAccounttype
-  Scenario: Account type string is long
-    Given user "1TestAccounttype" is logged into the Mobile App
-    When the user navigates to the Accounts tab
-    When I set the account details
-    Then the user should see the following values in the blue card:
-      | Identifier      | Expected Value |
-      | accountName     | AAA YMNAA XXC |
-      | accountBalance  | 120,430.6723 AED |
-      | accountNumber   | 1021000915202 |
-      | accountType     | CURRENT ACCOUNT FOREIGN CCY |
+@LongAccounttype
+Scenario: Account type string is long
+  Given user "1TestAccounttype" is logged into the Mobile App
+  When the user navigates to the Accounts tab
+  Then the user should see the following values in the blue card:
+    | Identifier      | Expected Value |
+    | accountName     | AAA YMNAA XXC |
+    | accountBalance  | 120,430.6723 AED |
+    | accountNumber   | 1021000915202 |
+    | accountType     | CURRENT ACCOUNT FOREIGN CCY |
+    | currency        | USD |
+    | interestRate    | 1.8% |
+    | accountStatus   | Pending |
+    | iban           | AE230078901234567890123 |
 
+
+
+
+import { $ } from '@wdio/globals';
+import { ChainablePromiseElement } from 'webdriverio';
+
+class IosAccountPage {
+    public get accountNameField(): ChainablePromiseElement<WebdriverIO.Element> {
+        return $('~accountName');
+    }
+
+    public get accountBalanceField(): ChainablePromiseElement<WebdriverIO.Element> {
+        return $('~accountBalance');
+    }
+
+    public get accountNumberField(): ChainablePromiseElement<WebdriverIO.Element> {
+        return $('~accountNumber');
+    }
+
+    public get accountTypeField(): ChainablePromiseElement<WebdriverIO.Element> {
+        return $('~accountType');
+    }
+
+    public async setTextById(identifier: string, value: string) {
+        const element = await $(`~${identifier}`);
+        await element.setValue(value);
+    }
+
+    public async getAccountName(): Promise<string> {
+        return this.accountNameField.getText();
+    }
+
+    public async getAccountBalance(): Promise<string> {
+        return this.accountBalanceField.getText();
+    }
+
+    public async getAccountNumber(): Promise<string> {
+        return this.accountNumberField.getText();
+    }
+
+    public async getAccountType(): Promise<string> {
+        return this.accountTypeField.getText();
+    }
+}
+
+export default new IosAccountPage();
