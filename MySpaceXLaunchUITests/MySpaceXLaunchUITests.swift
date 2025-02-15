@@ -83,236 +83,159 @@ class IosAccountPage {
     }
 }
 
-struct AccountData: Identifiable, Codable {
-    let id = UUID()
-    var accountName: String
-    var accountBalance: String
-    var accountNumber: String
-    var accountType: String
+import SwiftUI
+
+struct ParentView: View {
+    @StateObject private var viewModel = AccountViewModel()
+
+    var body: some View {
+        VStack {
+            CardAccountView(viewModel: viewModel)
+        }
+        .onAppear {
+            viewModel.updateFromJson() // Parse JSON from UserDefaults
+        }
+    }
 }
-@State private var testAccountData: AccountData = AccountData(
+import SwiftUI
+
+class AccountViewModel: ObservableObject {
+    @Published var accountData: AccountData = AccountData(
         accountName: "Default Name",
         accountBalance: "0.00 AED",
-        accountNumber: "00000000",
-        accountType: "Default Type"
+        accountNumber: "0000000000",
+        accountType: "Unknown",
+        currency: "AED"
     )
 
+    func updateFromJson() {
+        if let jsonString = UserDefaults.standard.string(forKey: "accountData") {
+            if let data = jsonString.data(using: .utf8) {
+                let decodedData = try? JSONDecoder().decode(AccountData.self, from: data)
+                if let newData = decodedData {
+                    DispatchQueue.main.async {
+                        self.accountData = newData
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+import SwiftUI
+
+struct CardAccountView: View {
+    @ObservedObject var viewModel: AccountViewModel
+
+    var body: some View {
+        VStack {
+            Text(viewModel.accountData.accountName)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            
+            Text(viewModel.accountData.accountBalance)
+            Text(viewModel.accountData.accountNumber)
+            Text(viewModel.accountData.accountType)
+            Text(viewModel.accountData.currency)
+        }
+        .padding()
+        .background(Color.blue)
+        .cornerRadius(10)
+    }
+}
+
+
+import { ChainablePromiseElement } from 'webdriverio';
+
+export default abstract class BaseAccount {
+    protected async setUserDefaults(key: string, jsonValue: Record<string, string>) {
+        const jsonString = JSON.stringify(jsonValue);
+        await driver.execute(`UserDefaults.standard.set("\${jsonString}", forKey: "\${key}")`);
+    }
+
+    protected async getTextById(identifier: string): Promise<string> {
+        const element = await $(`~${identifier}`);
+        return await element.getText();
+    }
+}
+
+
+
+import BaseAccount from '../base/BaseAccount.js';
+
+class IosAccountPage extends BaseAccount {
+    public async setAccountData(jsonData: Record<string, string>) {
+        await this.setUserDefaults("accountData", jsonData);
+    }
+
+    public async validateAccountData(expectedData: Record<string, string>) {
+        for (const [key, expectedValue] of Object.entries(expectedData)) {
+            const actualValue = await this.getTextById(key);
+            if (actualValue !== expectedValue) {
+                throw new Error(`Validation failed for ${key}: Expected "${expectedValue}", but got "${actualValue}"`);
+            }
+        }
+    }
+}
+
 export default new IosAccountPage();
+
 
 
 import { Given, When, Then } from '@wdio/cucumber-framework';
-import IosAccountPage from '../../pageobjects/ios/ios.account.page.js';
-import { expect } from 'chai';
+import IosAccountPage from '../../pageobjects/ios/IosAccountPage.js';
 
-Given("user {string} is logged into the Mobile App", async function (userId) {
-    console.log(`User ${userId} is logged in`);
-});
-
-When("the user navigates to the Accounts tab", async function () {
-    console.log("Navigated to Accounts tab");
-});
-
-When("I set the account details", async function () {
-    await IosAccountPage.setTextById("accountName", "Transaction Banking Business On(...)");
-    await IosAccountPage.setTextById("accountBalance", "72,000.60 AED");
-    await IosAccountPage.setTextById("accountNumber", "1011000915221");
-    await IosAccountPage.setTextById("accountType", "CURRENT ACCOUNT");
-});
-
-Then("the user should see the following values in the blue card:", async function (dataTable) {
-    const expectedData = dataTable.rowsHash();
-
-    const actualData = {
-        accountName: await IosAccountPage.getAccountName(),
-        accountBalance: await IosAccountPage.getAccountBalance(),
-        accountNumber: await IosAccountPage.getAccountNumber(),
-        accountType: await IosAccountPage.getAccountType(),
-    };
-
-    for (const key in expectedData) {
-        expect(actualData[key]).to.equal(expectedData[key], `Mismatch in ${key}`);
-    }
-});
-
-
-Feature: Account Services-Mobile: View Balance and Share Account details
-
-@DisplayAccountDetails
-Scenario: Display Account Details
-  Given user "TEST1234" is logged into the Mobile App
-  When the user navigates to the Accounts tab
-  Then the user should see the following values in the blue card:
-    | Identifier      | Expected Value            |
-    | accountName     | TBS Smart Business Demo AC |
-    | accountBalance  | 850,987.20 AED             |
-    | accountNumber   | 89373772394                |
-    | accountType     | Call account               |
-    | currency        | AED                         |
-    | interestRate    | 1.5%                        |
-    | accountStatus   | Active                      |
-    | iban           | AE890001234567890123456     |
-
-@TruncateAccountName
-Scenario: Truncate Account Name display when long
-  Given user "TRUNC67" is logged into the Mobile App
-  When the user navigates to the Accounts tab
-  Then the user should see the following values in the blue card:
-    | Identifier      | Expected Value                          |
-    | accountName     | Transaction Banking Business On(...)   |
-    | accountBalance  | 72,000.60 AED                          |
-    | accountNumber   | 1011000915221                          |
-    | accountType     | CURRENT ACCOUNT                        |
-    | currency        | AED                                    |
-    | interestRate    | 2.0%                                   |
-    | accountStatus   | Active                                 |
-    | iban           | AE770012345678901234567                |
-
-@BalanceinMillion
-Scenario: Convert Balance in Million
-  Given user "MillionBalance" is logged into the Mobile App
-  When the user navigates to the Accounts tab
-  Then the user should see the following values in the blue card:
-    | Identifier      | Expected Value |
-    | accountName     | Transaction Banking Business |
-    | accountBalance  | 1.12M AED |
-    | accountNumber   | 4011000915200002 |
-    | accountType     | LC SIGHT |
-    | currency        | AED |
-    | interestRate    | 1.0% |
-    | accountStatus   | Closed |
-    | iban           | AE560045678901234567890 |
-
-@LongAccounttype
-Scenario: Account type string is long
-  Given user "1TestAccounttype" is logged into the Mobile App
-  When the user navigates to the Accounts tab
-  Then the user should see the following values in the blue card:
-    | Identifier      | Expected Value |
-    | accountName     | AAA YMNAA XXC |
-    | accountBalance  | 120,430.6723 AED |
-    | accountNumber   | 1021000915202 |
-    | accountType     | CURRENT ACCOUNT FOREIGN CCY |
-    | currency        | USD |
-    | interestRate    | 1.8% |
-    | accountStatus   | Pending |
-    | iban           | AE230078901234567890123 |
-
-
-
-
-import { $ } from '@wdio/globals';
-import { ChainablePromiseElement } from 'webdriverio';
-
-class IosAccountPage {
-    public get accountNameField(): ChainablePromiseElement<WebdriverIO.Element> {
-        return $('~accountName');
-    }
-
-    public get accountBalanceField(): ChainablePromiseElement<WebdriverIO.Element> {
-        return $('~accountBalance');
-    }
-
-    public get accountNumberField(): ChainablePromiseElement<WebdriverIO.Element> {
-        return $('~accountNumber');
-    }
-
-    public get accountTypeField(): ChainablePromiseElement<WebdriverIO.Element> {
-        return $('~accountType');
-    }
-
-    public async setTextById(identifier: string, value: string) {
-        const element = await $(`~${identifier}`);
-        await element.setValue(value);
-    }
-
-    public async getAccountName(): Promise<string> {
-        return this.accountNameField.getText();
-    }
-
-    public async getAccountBalance(): Promise<string> {
-        return this.accountBalanceField.getText();
-    }
-
-    public async getAccountNumber(): Promise<string> {
-        return this.accountNumberField.getText();
-    }
-
-    public async getAccountType(): Promise<string> {
-        return this.accountTypeField.getText();
-    }
-}
-
-export default new IosAccountPage();
-
-
-const testData: Record<string, Record<string, string>> = {
-    TEST1234: {
+const testData = {
+    "TEST1234": {
         accountName: "TBS Smart Business Demo AC",
         accountBalance: "850,987.20 AED",
         accountNumber: "89373772394",
         accountType: "Call account",
-        currency: "AED",
-        interestRate: "1.5%",
-        accountStatus: "Active",
-        iban: "AE890001234567890123456"
+        currency: "AED"
     },
-    TRUNC67: {
+    "TRUNC67": {
         accountName: "Transaction Banking Business On(...)",
         accountBalance: "72,000.60 AED",
         accountNumber: "1011000915221",
         accountType: "CURRENT ACCOUNT",
-        currency: "AED",
-        interestRate: "2.0%",
-        accountStatus: "Active",
-        iban: "AE770012345678901234567"
-    },
-    MillionBalance: {
-        accountName: "Transaction Banking Business",
-        accountBalance: "1.12M AED",
-        accountNumber: "4011000915200002",
-        accountType: "LC SIGHT",
-        currency: "AED",
-        interestRate: "1.0%",
-        accountStatus: "Closed",
-        iban: "AE560045678901234567890"
-    },
-    "1TestAccounttype": {
-        accountName: "AAA YMNAA XXC",
-        accountBalance: "120,430.6723 AED",
-        accountNumber: "1021000915202",
-        accountType: "CURRENT ACCOUNT FOREIGN CCY",
-        currency: "USD",
-        interestRate: "1.8%",
-        accountStatus: "Pending",
-        iban: "AE230078901234567890123"
+        currency: "AED"
     }
 };
 
-// ✅ Set Data in `Given` Step
-Given("user {string} is logged into the Mobile App", async function (userId) {
-    this.userId = userId; // Store the userId for later use
-    this.userTestData = testData[userId]; // Assign user-specific data
-
-    if (!this.userTestData) {
-        throw new Error(`Test data for user ${userId} not found!`);
+Given(/^user "(.*)" is logged into the Mobile App$/, async function (userId) {
+    if (!testData[userId]) {
+        throw new Error(`No test data found for user: ${userId}`);
     }
-
-    // Set all text values for the user
-    for (const [key, value] of Object.entries(this.userTestData)) {
-        await IosAccountPage.setTextById(key, value);
-    }
+    await IosAccountPage.setAccountData(testData[userId]);
 });
 
 When("the user navigates to the Accounts tab", async function () {
-    await IosAccountPage.navigateToAccountsTab();
+    console.log("Navigating to Accounts tab...");
 });
 
-Then("the user should see the following values in the blue card:", async function (dataTable: DataTable) {
-    const expectedData = dataTable.rowsHash(); // Convert DataTable to key-value object
-
-    for (const [identifier, expectedValue] of Object.entries(expectedData)) {
-        const actualValue = await IosAccountPage.getTextById(identifier);
-        expect(actualValue).toEqual(expectedValue, `Mismatch for ${identifier}`);
+Then("the user should see the following values in the blue card:", async function () {
+    const userId = this.scenarioContext.currentUser;
+    if (!testData[userId]) {
+        throw new Error(`No test data found for user: ${userId}`);
     }
+    await IosAccountPage.validateAccountData(testData[userId]);
 });
 
+
+
+Feature: Account Services-Mobile: View Balance and Share Account details
+  As a user
+  I want to view the account balance in the Accounts tab and share details
+
+  @DisplayAccountDetails
+  Scenario: Display Account Details
+    Given user "TEST1234" is logged into the Mobile App
+    When the user navigates to the Accounts tab
+    Then the user should see the following values in the blue card:
+
+  @TruncateAccountName
+  Scenario: Truncate Account Name display when long
+    Given user "TRUNC67" is logged into the Mobile App
+    When the user navigates to the Accounts tab
+    Then the user should see the following values in the blue card:
