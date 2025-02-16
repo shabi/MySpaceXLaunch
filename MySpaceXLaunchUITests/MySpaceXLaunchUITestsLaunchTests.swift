@@ -31,101 +31,130 @@ class MySpaceXLaunchUITestsLaunchTests: XCTestCase {
     }
 }
 
-import { ChainablePromiseElement } from 'webdriverio';
+public struct AccountLandingView: View {
+    @State var selectedTab = 2
+    
+    //Mock card data to show how to use
+    @StateObject var cardAccountViewModel = CardAccountViewModel()
+    var cardMockInfoModel = CardInfoModel(accountNameText: "PPS Main account", accountAmountText: "160,000.00 AED", accountNumberText: "89373772394", accountTypeText: "Call account")
 
-/**
- * Base class for common reusable actions and properties.
- */
-abstract class BaseAccount {
-    /**
-     * Abstract method to get text by identifier.
-     */
-    public abstract getTextById(identifier: string): Promise<string>;
+    
+    let tabitems: [TabItem] = [
+        TabItem(icon: "brand-logo", title: "Home"),
+        TabItem(icon: "convert", title: "Payments"),
+        TabItem(icon: "accounts", title: "Accounts"),
+        TabItem(icon: "request", title: "Services"),
+        TabItem(icon: "hamburger-menu", title: "More")
+    ]
+    
+    public init(selectedTab: Int = 2, tabitems: [TabItem] = [TabItem]()) {
+        self.selectedTab = selectedTab
+    }
+    @EnvironmentObject private var coordinator: AppCoordinator
+    public var body: some View {
+        
+        ZStack {
+            VStack(spacing: AccountConstants.Spacings.defaultSpacingZero) {
+                
+                ScrollView(.vertical) {
+                    
+                    VStack {
+                        
+                        CardAccount(cardType: .active,
+                                    cardAccountViewModel: CardAccountViewModel(cardInfoModel: cardMockInfoModel))
+                    }
+                }
 
-    /**
-     * Abstract method to get an element by accessibility ID.
-     */
-    public abstract getElementById(identifier: string): ChainablePromiseElement<WebdriverIO.Element>;
-
-    /**
-     * Verifies multiple static values dynamically.
-     */
-    public async verifyValues(expectedDetails: { [key: string]: string }) {
-        for (const [identifier, expectedValue] of Object.entries(expectedDetails)) {
-            const actualText = await this.getTextById(identifier);
-
-            console.log(`🔍 Checking: '${identifier}' → Expected: '${expectedValue}', Found: '${actualText}'`);
-
-            if (actualText !== expectedValue) {
-                throw new Error(`❌ Mismatch for '${identifier}': Expected '${expectedValue}', but found '${actualText}'`);
             }
         }
     }
 }
 
-export default BaseAccount;
-
-
-
-import { $ } from '@wdio/globals';
-import BaseAccount from '../base/BaseAccount.js';
-import { ChainablePromiseElement } from 'webdriverio';
-
-/**
- * iOS-specific implementation for the account page.
- */
-class IosAccountPage extends BaseAccount {
-    /**
-     * Retrieves an element by its accessibility ID.
-     */
-    public getElementById(identifier: string): ChainablePromiseElement<WebdriverIO.Element> {
-        return $(`~${identifier}`);
+public class CardAccountViewModel: ObservableObject {
+    @Published var cardInfoModel: CardInfoModel = CardInfoModel()
+    public init(cardInfoModel: CardInfoModel = CardInfoModel()) {
+        self.cardInfoModel = cardInfoModel
     }
-
-    /**
-     * Retrieves text from an element by its accessibility ID.
-     */
-    public async getTextById(identifier: string): Promise<string> {
-        const element = await this.getElementById(identifier);
-        return await element.getText();
+    
+    public func updateFromJson() {
+        if let jsonString = UserDefaults.standard.string(forKey: "accountData") {
+            if let data = jsonString.data(using: .utf8) {
+                let decodedData = try? JSONDecoder().decode(CardInfoModel.self, from: data)
+                if let newData = decodedData {
+                    DispatchQueue.main.async {
+                        self.cardInfoModel = newData
+                    }
+                }
+            }
+        }
     }
 }
 
-export default IosAccountPage;
+public struct CardInfoModel: Codable  {
+//    public let id = UUID()
+    var accountNameText: String
+    var accountAmountText: String
+    var accountNumberText: String
+    var accountTypeText: String
+    
+    public init(accountNameText: String = "",
+         accountAmountText: String = "",
+         accountNumberText: String = "",
+         accountTypeText: String = "") {
 
-
-
-
-import dotenv from 'dotenv';
-dotenv.config();
-import { Given, When, Then, DataTable } from '@wdio/cucumber-framework';
-import { getPage } from '../../pageobjects/base/Baseutil.js';
-import IosAccountPage from '../../pageobjects/ios/IosAccountPage.js';
-
-// Get the appropriate page object (iOS or Android)
-const AccountPage = getPage({ ios: IosAccountPage, android: IosAccountPage });
-
-Given('user is logged into the app', async function () {
-    await AccountPage.launch();
-});
-
-When('the user navigates to the account card', async function () {
-    await AccountPage.navigateToAccountCard();
-});
-
-Then('user should see the following values:', async function (dataTable: DataTable) {
-    const expectedDetails: { [key: string]: string } = {};
-
-    // Convert Cucumber DataTable to an object
-    dataTable.raw().forEach(([identifier, value]) => {
-        expectedDetails[identifier] = value;
-    });
-
-    await AccountPage.verifyValues(expectedDetails);
-});
-
-
-export function getPage({ ios, android }: { ios: any; android: any }) {
-    return process.env.PLATFORM === 'ios' ? new ios() : new android();
+        self.accountNameText = accountNameText
+        self.accountAmountText = accountAmountText
+        self.accountNumberText = accountNumberText
+        self.accountTypeText = accountTypeText
+    }
 }
 
+public struct CardAccount: View {
+
+    var cardType : CardType
+    @ObservedObject var cardAccountViewModel: CardAccountViewModel
+    
+    public init(cardType: CardType, cardAccountViewModel: CardAccountViewModel) {
+        self.cardType = cardType
+        self.cardAccountViewModel = cardAccountViewModel
+    }
+
+    public var body: some View {
+        
+        VStack {
+
+            AccountCardView(cardType: cardType, config: self.cardType.cardAccountGradientConfig,
+                            cardInfoModel: cardAccountViewModel.cardInfoModel) {
+                VStack(alignment: .leading,
+                       spacing: self.cardType.cardAccountGradientConfig.accountVirticalSpacing) {
+                    Text(self.cardAccountViewModel.cardInfoModel.accountNameText)
+                        .fontToken(self.cardType.cardAccountGradientConfig.accountDetail.titleFont)
+                        .foregroundColor(self.cardType.cardAccountGradientConfig.accountDetail.titleColor)
+                        .accessibilityIdentifier("accountNameText")
+                        
+                    HStack(alignment: .center, spacing: DesignConstants.CardConstant.infoIconSpacing) {
+                        Text(self.cardAccountViewModel.cardInfoModel.accountAmountText)
+                            .fontToken(self.cardType.cardAccountGradientConfig.accountDetail.subTitleFont)
+                            .foregroundColor(self.cardType.cardAccountGradientConfig.accountDetail.subTitleColor)
+                            .accessibilityIdentifier("accountAmountText")
+                    }
+                }
+            } descriptionContent: {
+                VStack(alignment: .leading) {
+                    Text(self.cardAccountViewModel.cardInfoModel.accountNumberText)
+                        .fontToken(self.cardType.cardAccountGradientConfig.callAccountDetail.titleFont)
+                        .foregroundColor(self.cardType.cardAccountGradientConfig.callAccountDetail.titleColor)
+                        .accessibilityIdentifier("accountNumberText")
+                    HStack {
+                        Text(self.cardAccountViewModel.cardInfoModel.accountTypeText)
+                            .fontToken(self.cardType.cardAccountGradientConfig.callAccountDetail.subTitleFont)
+                            .foregroundColor(self.cardType.cardAccountGradientConfig.callAccountDetail.subTitleColor)
+                            .accessibilityIdentifier("accountTypeText")
+                    }
+                }
+            }
+            .frame(height: 160)
+        }
+    }
+       
+}
