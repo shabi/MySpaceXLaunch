@@ -31,130 +31,117 @@ class MySpaceXLaunchUITestsLaunchTests: XCTestCase {
     }
 }
 
-public struct AccountLandingView: View {
-    @State var selectedTab = 2
-    
-    //Mock card data to show how to use
-    @StateObject var cardAccountViewModel = CardAccountViewModel()
-    var cardMockInfoModel = CardInfoModel(accountNameText: "PPS Main account", accountAmountText: "160,000.00 AED", accountNumberText: "89373772394", accountTypeText: "Call account")
-
-    
-    let tabitems: [TabItem] = [
-        TabItem(icon: "brand-logo", title: "Home"),
-        TabItem(icon: "convert", title: "Payments"),
-        TabItem(icon: "accounts", title: "Accounts"),
-        TabItem(icon: "request", title: "Services"),
-        TabItem(icon: "hamburger-menu", title: "More")
-    ]
-    
-    public init(selectedTab: Int = 2, tabitems: [TabItem] = [TabItem]()) {
-        self.selectedTab = selectedTab
-    }
-    @EnvironmentObject private var coordinator: AppCoordinator
-    public var body: some View {
-        
-        ZStack {
-            VStack(spacing: AccountConstants.Spacings.defaultSpacingZero) {
-                
-                ScrollView(.vertical) {
-                    
-                    VStack {
-                        
-                        CardAccount(cardType: .active,
-                                    cardAccountViewModel: CardAccountViewModel(cardInfoModel: cardMockInfoModel))
-                    }
-                }
-
-            }
-        }
-    }
-}
+import Foundation
 
 public class CardAccountViewModel: ObservableObject {
     @Published var cardInfoModel: CardInfoModel = CardInfoModel()
-    public init(cardInfoModel: CardInfoModel = CardInfoModel()) {
-        self.cardInfoModel = cardInfoModel
+
+    public init() {
+        loadTestDataIfAvailable()
     }
-    
-    public func updateFromJson() {
-        if let jsonString = UserDefaults.standard.string(forKey: "accountData") {
-            if let data = jsonString.data(using: .utf8) {
-                let decodedData = try? JSONDecoder().decode(CardInfoModel.self, from: data)
-                if let newData = decodedData {
-                    DispatchQueue.main.async {
-                        self.cardInfoModel = newData
-                    }
-                }
+
+    private func loadTestDataIfAvailable() {
+        if let jsonString = ProcessInfo.processInfo.environment["TEST_ACCOUNT_DATA"],
+           let data = jsonString.data(using: .utf8),
+           let decodedData = try? JSONDecoder().decode(CardInfoModel.self, from: data) {
+            DispatchQueue.main.async {
+                self.cardInfoModel = decodedData
             }
         }
     }
 }
 
-public struct CardInfoModel: Codable  {
-//    public let id = UUID()
-    var accountNameText: String
-    var accountAmountText: String
-    var accountNumberText: String
-    var accountTypeText: String
-    
-    public init(accountNameText: String = "",
-         accountAmountText: String = "",
-         accountNumberText: String = "",
-         accountTypeText: String = "") {
 
-        self.accountNameText = accountNameText
-        self.accountAmountText = accountAmountText
-        self.accountNumberText = accountNumberText
-        self.accountTypeText = accountTypeText
-    }
+
+import { driver } from "@wdio/globals";
+
+export async function setAccountData(testData: object) {
+    const jsonString = JSON.stringify(testData);
+
+    // Terminate and relaunch app with test data
+    await driver.terminateApp("com.yourapp.bundleid");
+    await driver.activateApp("com.yourapp.bundleid", {
+        arguments: ["-TEST_ACCOUNT_DATA", jsonString]
+    });
+
+    console.log("Test Data Set:", jsonString);
 }
 
-public struct CardAccount: View {
 
-    var cardType : CardType
-    @ObservedObject var cardAccountViewModel: CardAccountViewModel
-    
-    public init(cardType: CardType, cardAccountViewModel: CardAccountViewModel) {
-        self.cardType = cardType
-        self.cardAccountViewModel = cardAccountViewModel
+
+Feature: Account Card UI Validation
+  As a user
+  I want to verify that account details are displayed correctly
+
+  @TruncateAccountName
+  Scenario: Truncate Account Name display when long
+    Given user "TRUNC67" is logged into the Mobile App
+    When the user navigates to the Accounts tab
+    Then the user should see the following values in the blue card:
+      | accountName      | Transaction Banking Business On(...) |
+      | accountBalance   | 72,000.60 AED                        |
+      | accountNumber    | 1011000915221                        |
+      | accountType      | CURRENT ACCOUNT                      |
+
+  @BalanceinMillion
+  Scenario: Convert Balance in Million
+    Given user "MillionBalance" is logged into the Mobile App
+    When the user navigates to the Accounts tab
+    Then the user should see the following values in the blue card:
+      | accountName      | Transaction Banking Business         |
+      | accountBalance   | 1.12M AED                            |
+      | accountNumber    | 4011000915200002                     |
+      | accountType      | LC SIGHT                             |
+
+
+
+import { Given, When, Then } from "@wdio/cucumber-framework";
+import { setAccountData } from "../pageObjects/IosAccountPage";
+import { expect } from "chai";
+
+Given(/^user "([^"]*)" is logged into the Mobile App$/, async function (userId) {
+    let testData;
+
+    switch (userId) {
+        case "TRUNC67":
+            testData = {
+                accountNameText: "Transaction Banking Business On(...)",
+                accountAmountText: "72,000.60 AED",
+                accountNumberText: "1011000915221",
+                accountTypeText: "CURRENT ACCOUNT"
+            };
+            break;
+        case "MillionBalance":
+            testData = {
+                accountNameText: "Transaction Banking Business",
+                accountAmountText: "1.12M AED",
+                accountNumberText: "4011000915200002",
+                accountTypeText: "LC SIGHT"
+            };
+            break;
+        default:
+            throw new Error(`No test data found for user: ${userId}`);
     }
 
-    public var body: some View {
-        
-        VStack {
+    await setAccountData(testData);
+});
 
-            AccountCardView(cardType: cardType, config: self.cardType.cardAccountGradientConfig,
-                            cardInfoModel: cardAccountViewModel.cardInfoModel) {
-                VStack(alignment: .leading,
-                       spacing: self.cardType.cardAccountGradientConfig.accountVirticalSpacing) {
-                    Text(self.cardAccountViewModel.cardInfoModel.accountNameText)
-                        .fontToken(self.cardType.cardAccountGradientConfig.accountDetail.titleFont)
-                        .foregroundColor(self.cardType.cardAccountGradientConfig.accountDetail.titleColor)
-                        .accessibilityIdentifier("accountNameText")
-                        
-                    HStack(alignment: .center, spacing: DesignConstants.CardConstant.infoIconSpacing) {
-                        Text(self.cardAccountViewModel.cardInfoModel.accountAmountText)
-                            .fontToken(self.cardType.cardAccountGradientConfig.accountDetail.subTitleFont)
-                            .foregroundColor(self.cardType.cardAccountGradientConfig.accountDetail.subTitleColor)
-                            .accessibilityIdentifier("accountAmountText")
-                    }
-                }
-            } descriptionContent: {
-                VStack(alignment: .leading) {
-                    Text(self.cardAccountViewModel.cardInfoModel.accountNumberText)
-                        .fontToken(self.cardType.cardAccountGradientConfig.callAccountDetail.titleFont)
-                        .foregroundColor(self.cardType.cardAccountGradientConfig.callAccountDetail.titleColor)
-                        .accessibilityIdentifier("accountNumberText")
-                    HStack {
-                        Text(self.cardAccountViewModel.cardInfoModel.accountTypeText)
-                            .fontToken(self.cardType.cardAccountGradientConfig.callAccountDetail.subTitleFont)
-                            .foregroundColor(self.cardType.cardAccountGradientConfig.callAccountDetail.subTitleColor)
-                            .accessibilityIdentifier("accountTypeText")
-                    }
-                }
-            }
-            .frame(height: 160)
-        }
-    }
-       
-}
+When(/^the user navigates to the Accounts tab$/, async function () {
+    await $("~AccountsTab").click();
+});
+
+Then(/^the user should see the following values in the blue card:$/, async function (dataTable) {
+    const expectedData = dataTable.rowsHash();
+
+    const actualAccountName = await $("~accountNameText").getText();
+    const actualBalance = await $("~accountAmountText").getText();
+    const actualAccountNumber = await $("~accountNumberText").getText();
+    const actualAccountType = await $("~accountTypeText").getText();
+
+    expect(actualAccountName).to.equal(expectedData.accountName);
+    expect(actualBalance).to.equal(expectedData.accountBalance);
+    expect(actualAccountNumber).to.equal(expectedData.accountNumber);
+    expect(actualAccountType).to.equal(expectedData.accountType);
+});
+
+
