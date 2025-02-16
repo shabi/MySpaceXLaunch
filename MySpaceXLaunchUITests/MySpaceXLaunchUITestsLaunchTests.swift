@@ -41,7 +41,7 @@ public class CardAccountViewModel: ObservableObject {
     }
 
     private func loadTestDataIfAvailable() {
-        if let jsonString = UserDefaults.standard.string(forKey: "accountData"),
+        if let jsonString = ProcessInfo.processInfo.environment["accountData"],
            let data = jsonString.data(using: .utf8),
            let decodedData = try? JSONDecoder().decode(CardInfoModel.self, from: data) {
             DispatchQueue.main.async {
@@ -51,155 +51,124 @@ public class CardAccountViewModel: ObservableObject {
     }
 }
 
-
-
-import { driver } from "@wdio/globals";
-
-export async function setAccountData(testData: object) {
-    const jsonString = JSON.stringify(testData);
-
-    await driver.executeScript(`
-        const userDefaults = NSUserDefaults.standardUserDefaults();
-        userDefaults.setObjectForKey('${jsonString}', 'accountData');
-        userDefaults.synchronize();
-    `);
-
-    console.log("Test Data Set:", jsonString);
-}
-
-//
-
-await driver.executeScript(`
-    objc.import("Foundation");
-    let userDefaults = $.NSUserDefaults.standardUserDefaults;
-    userDefaults.setObjectForKey("${jsonString}", "accountData");
-    userDefaults.synchronize();
-`);
-
-import { Given, When, Then } from "@wdio/cucumber-framework";
-import { setAccountData } from "../pageObjects/IosAccountPage";
+accountTest
+import { remote } from "webdriverio";
 import { expect } from "chai";
 
-Given(/^user "([^"]*)" is logged into the Mobile App$/, async function (userId) {
-    let testData;
-
-    switch (userId) {
-        case "TRUNC67":
-            testData = {
-                accountNameText: "Transaction Banking Business On(...)",
-                accountAmountText: "72,000.60 AED",
-                accountNumberText: "1011000915221",
-                accountTypeText: "CURRENT ACCOUNT"
-            };
-            break;
-        case "MillionBalance":
-            testData = {
-                accountNameText: "Transaction Banking Business",
-                accountAmountText: "1.12M AED",
-                accountNumberText: "4011000915200002",
-                accountTypeText: "LC SIGHT"
-            };
-            break;
-        default:
-            throw new Error(`No test data found for user: ${userId}`);
+const testCases = [
+    {
+        accountNameText: "TBS Smart Business Demo AC",
+        accountAmountText: "850,987.20 AED",
+        accountNumberText: "89373772394",
+        accountTypeText: "Call account"
+    },
+    {
+        accountNameText: "Transaction Banking Business On(...)",
+        accountAmountText: "72,000.60 AED",
+        accountNumberText: "1011000915221",
+        accountTypeText: "CURRENT ACCOUNT"
+    },
+    {
+        accountNameText: "Transaction Banking Business",
+        accountAmountText: "1.12M AED",
+        accountNumberText: "4011000915200002",
+        accountTypeText: "LC SIGHT"
     }
+];
 
-    await setAccountData(testData);
-});
+describe("Account Card Validation Test", () => {
+    let driver;
 
-When(/^the user navigates to the Accounts tab$/, async function () {
-    await $("~AccountsTab").click();
-});
+    before(async () => {
+        driver = await remote({
+            capabilities: {
+                platformName: "iOS",
+                "appium:deviceName": "iPhone 14",
+                "appium:automationName": "XCUITest",
+                "appium:app": "/path/to/your.app",
+                "appium:noReset": false
+            }
+        });
+    });
 
-Then(/^the user should see the following values in the blue card:$/, async function (dataTable) {
-    const expectedData = dataTable.rowsHash();
+    after(async () => {
+        await driver.quit();
+    });
 
-    const actualAccountName = await $("~accountNameText").getText();
-    const actualBalance = await $("~accountAmountText").getText();
-    const actualAccountNumber = await $("~accountNumberText").getText();
-    const actualAccountType = await $("~accountTypeText").getText();
+    for (const testData of testCases) {
+        it(`Validating Account Card for ${testData.accountNameText}`, async () => {
+            const jsonString = JSON.stringify(testData);
 
-    expect(actualAccountName).to.equal(expectedData.accountName);
-    expect(actualBalance).to.equal(expectedData.accountBalance);
-    expect(actualAccountNumber).to.equal(expectedData.accountNumber);
-    expect(actualAccountType).to.equal(expectedData.accountType);
-});
+            // Inject data into environment variables
+            await driver.terminateApp("com.yourapp.bundleid");
+            await driver.execute("mobile: launchApp", {
+                bundleId: "com.yourapp.bundleid",
+                arguments: [],
+                environment: {
+                    accountData: jsonString
+                }
+            });
 
+            // Wait for the app to launch and load data
+            await driver.pause(3000);
 
+            // Navigate to the Accounts tab
+            await $("~AccountsTab").click();
 
-Feature: Account Card UI Validation
-  As a user
-  I want to verify that account details are displayed correctly
+            // Validate UI Elements
+            const actualAccountName = await $("~accountNameText").getText();
+            const actualBalance = await $("~accountAmountText").getText();
+            const actualAccountNumber = await $("~accountNumberText").getText();
+            const actualAccountType = await $("~accountTypeText").getText();
 
-  @TruncateAccountName
-  Scenario: Truncate Account Name display when long
-    Given user "TRUNC67" is logged into the Mobile App
-    When the user navigates to the Accounts tab
-    Then the user should see the following values in the blue card:
-      | accountName      | Transaction Banking Business On(...) |
-      | accountBalance   | 72,000.60 AED                        |
-      | accountNumber    | 1011000915221                        |
-      | accountType      | CURRENT ACCOUNT                      |
-
-  @BalanceinMillion
-  Scenario: Convert Balance in Million
-    Given user "MillionBalance" is logged into the Mobile App
-    When the user navigates to the Accounts tab
-    Then the user should see the following values in the blue card:
-      | accountName      | Transaction Banking Business         |
-      | accountBalance   | 1.12M AED                            |
-      | accountNumber    | 4011000915200002                     |
-      | accountType      | LC SIGHT                             |
-
-
-
-import { Given, When, Then } from "@wdio/cucumber-framework";
-import { setAccountData } from "../pageObjects/IosAccountPage";
-import { expect } from "chai";
-
-Given(/^user "([^"]*)" is logged into the Mobile App$/, async function (userId) {
-    let testData;
-
-    switch (userId) {
-        case "TRUNC67":
-            testData = {
-                accountNameText: "Transaction Banking Business On(...)",
-                accountAmountText: "72,000.60 AED",
-                accountNumberText: "1011000915221",
-                accountTypeText: "CURRENT ACCOUNT"
-            };
-            break;
-        case "MillionBalance":
-            testData = {
-                accountNameText: "Transaction Banking Business",
-                accountAmountText: "1.12M AED",
-                accountNumberText: "4011000915200002",
-                accountTypeText: "LC SIGHT"
-            };
-            break;
-        default:
-            throw new Error(`No test data found for user: ${userId}`);
+            expect(actualAccountName).to.equal(testData.accountNameText);
+            expect(actualBalance).to.equal(testData.accountAmountText);
+            expect(actualAccountNumber).to.equal(testData.accountNumberText);
+            expect(actualAccountType).to.equal(testData.accountTypeText);
+        });
     }
-
-    await setAccountData(testData);
-});
-
-When(/^the user navigates to the Accounts tab$/, async function () {
-    await $("~AccountsTab").click();
-});
-
-Then(/^the user should see the following values in the blue card:$/, async function (dataTable) {
-    const expectedData = dataTable.rowsHash();
-
-    const actualAccountName = await $("~accountNameText").getText();
-    const actualBalance = await $("~accountAmountText").getText();
-    const actualAccountNumber = await $("~accountNumberText").getText();
-    const actualAccountType = await $("~accountTypeText").getText();
-
-    expect(actualAccountName).to.equal(expectedData.accountName);
-    expect(actualBalance).to.equal(expectedData.accountBalance);
-    expect(actualAccountNumber).to.equal(expectedData.accountNumber);
-    expect(actualAccountType).to.equal(expectedData.accountType);
 });
 
 
+
+
+
+
+
+
+private func loadMockData() {
+        let jsonString = """
+        [
+            {
+                "username": "JohnDoe",
+                "account": {
+                    "id": "550e8400-e29b-41d4-a716-446655440000",
+                    "accountNumber": "1234 5678 9012 3456",
+                    "balance": 1250.75,
+                    "currency": "USD"
+                }
+            },
+            {
+                "username": "JaneSmith",
+                "account": {
+                    "id": "660e8400-e29b-41d4-a716-446655440001",
+                    "accountNumber": "9876 5432 1098 7654",
+                    "balance": 2500.50,
+                    "currency": "EUR"
+                }
+            }
+        ]
+        """
+        
+        if let jsonData = jsonString.data(using: .utf8) {
+            do {
+                allUserAccounts = try JSONDecoder().decode([UserAccount].self, from: jsonData)
+            } catch {
+                print("Failed to decode JSON: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    func selectUser(username: String) {
+        selectedUserAccount = allUserAccounts.first { $0.username == username }
+    }
