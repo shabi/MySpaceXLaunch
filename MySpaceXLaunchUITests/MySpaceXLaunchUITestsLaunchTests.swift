@@ -31,90 +31,73 @@ class MySpaceXLaunchUITestsLaunchTests: XCTestCase {
     }
 }
 
-import Foundation
+Feature: Validate Transactions List Screen
 
-extension Bundle {
-    func loadJSON<T: Decodable>(_ filename: String, as type: T.Type, from bundle: Bundle) -> T? {
-        guard let url = bundle.url(forResource: filename, withExtension: "json") else {
-            print("❌ JSON file '\(filename).json' not found in the specified bundle.")
-            return nil
-        }
-
-        do {
-            let data = try Data(contentsOf: url)
-            let decodedData = try JSONDecoder().decode(T.self, from: data)
-            return decodedData
-        } catch {
-            print("❌ JSON Decoding Error: \(error.localizedDescription)")
-            return nil
-        }
-    }
-}
+  Scenario: Validate transaction list with mock data
+    Given user "User1" is logged into the Mobile App
+    When the user navigates to the Transactions screen
+    Then the user should see the following transactions:
+      | Name                             | Amount       | Balance       |
+      | DTB Bank Charge                  | -2.00 AED   | 7,200.00 AED  |
+      | IFT-DTB TT REF                    | -200,000.45 AED | 120,000.45 AED |
+      | DFT-DTB TT REF                    | 61,000.00 AED | 251,000.00 AED |
+      | CHARGESEPHCOP                     | -0.05 AED   | 10,540.05 AED |
+      | TEST TRANSACTION                   | -14,809.245 AED | 214,809.245 AED |
 
 
 
+transactionSteps.ts
 
-import SwiftUI
+import { Given, When, Then } from '@wdio/cucumber-framework';
+import TransactionPage from '../pageObjects/TransactionPage';
 
-struct TransactionsListView: View {
-    @State private var transactions: [Transaction] = []
+Given(/^user "([^"]*)" is logged into the Mobile App$/, async (userType) => {
+    await TransactionPage.login(userType);  // Logs in the user
+});
+
+When(/^the user navigates to the Transactions screen$/, async () => {
+    await TransactionPage.navigateToTransactions();  // Opens transactions screen
+});
+
+Then(/^the user should see the following transactions:$/, async (table) => {
+    const expectedTransactions = table.hashes();
+    await TransactionPage.validateTransactions(expectedTransactions);  // Compares data
+});
+
+
+ransactionPage.ts
+
+import { expect } from '@wdio/globals';
+
+class TransactionPage {
     
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack {
-                    ForEach(transactions) { transaction in
-                        TransactionView(transaction: transaction)
-                            .padding(.horizontal)
-                    }
-                }
-                .padding(.vertical)
-            }
-            .navigationTitle("Transactions")
-            .onAppear {
-                if let loadedTransactions: TransactionsResponse = Bundle.main.decode("transactions", as: TransactionsResponse.self) {
-                    self.transactions = loadedTransactions.transactions
-                }
-            }
+    // Locators (change based on actual accessibility identifiers)
+    private transactionRows = $$('//*[@accessibilityIdentifier="transactionRow"]');
+    
+    async login(userType: string) {
+        // Mock login step if needed
+        console.log(`Logging in as ${userType}`);
+    }
+
+    async navigateToTransactions() {
+        const transactionsTab = await $('//*[@accessibilityIdentifier="transactionsTab"]');
+        await transactionsTab.click();
+    }
+
+    async validateTransactions(expectedTransactions: any[]) {
+        const rows = await this.transactionRows;
+        expect(rows.length).toBe(expectedTransactions.length);
+
+        for (let i = 0; i < expectedTransactions.length; i++) {
+            const name = await rows[i].$('//*[@accessibilityIdentifier="transactionName"]').getText();
+            const amount = await rows[i].$('//*[@accessibilityIdentifier="transactionAmount"]').getText();
+            const balance = await rows[i].$('//*[@accessibilityIdentifier="transactionBalance"]').getText();
+
+            expect(name).toBe(expectedTransactions[i].Name);
+            expect(amount).toBe(expectedTransactions[i].Amount);
+            expect(balance).toBe(expectedTransactions[i].Balance);
         }
     }
 }
 
-
-import SwiftUI
-
-// Codable Model
-struct Transaction: Codable, Identifiable {
-    let id = UUID() // Unique identifier for SwiftUI List
-    let description: String
-    let amount: String
-    let date: String
-    let runningBalance: String
-    let transactionReference: String
-    
-    enum CodingKeys: String, CodingKey {
-        case description = "Transaction Description"
-        case amount = "Amount"
-        case date = "Date"
-        case runningBalance = "Running Balance"
-        case transactionReference = "Transaction Reference"
-    }
-}
-
-// Wrapper for an array of transactions
-struct TransactionsResponse: Codable {
-    let transactions: [Transaction]
-}
-
-
-{
-   "transactions":[
-      {
-         "type":"CHARGESEPHCOP35805C34BG 253536363636 DTB BANK CHARGE SREDIFTSANITY2312 25-53533638-1-151 – AE0033958",
-         "amount":"-2.00 AED",
-         "date":"30 Jan 2025",
-         "balance":"7,200.00 AED",
-         "referenceNumber":"1100023452"
-      }
-   ]
-}
+export default new TransactionPage();
