@@ -30,26 +30,46 @@ class MySpaceXLaunchUITestsLaunchTests: XCTestCase {
         add(attachment)
     }
 }
-
-import Foundation
-
-public extension Bundle {
-    func decode<T: Decodable>(_ file: String, as type: T.Type) -> T? {
-        guard let url = self.url(forResource: file, withExtension: "json") else {
-            print("❌ Error: Could not find \(file).json in bundle.")
-            return nil
-        }
-        
-        do {
-            let data = try Data(contentsOf: url)
-            let decodedData = try JSONDecoder().decode(T.self, from: data)
-            return decodedData
-        } catch {
-            print("❌ JSON Decoding Error: \(error.localizedDescription)")
-            return nil
-        }
+{
+  "transactions": [
+    {
+      "Transaction Description": "CHARGESEPHCOP35805C34BG 253536363636 DTB BANK CHARGE SREDIFTSANITY2312 25-53533638-1-151 – AE0033958",
+      "Amount": "-2.00 AED",
+      "Date": "30 Jan 2025",
+      "Running Balance": "7,200.00 AED",
+      "Transaction Reference": "1100023452"
+    },
+    {
+      "Transaction Description": "IFT-DTB TT REF EPHCOP35805C34BG 326362383882 CA2 ADD21 ADD2 ADD3 @2.6186 REDIFTSANITY2312 25-2363627-1-151 – AE0042200",
+      "Amount": "-200,000.45 AED",
+      "Date": "30 Jan 2025",
+      "Running Balance": "120,000.45 AED",
+      "Transaction Reference": "1100023440"
+    },
+    {
+      "Transaction Description": "DFT-DTB TT REF EPHCOP35805C34BG 326362383882 TEST TEST @2.6186 REDIFTSANITY2312 25-2363627-1-151 – AE0012345",
+      "Amount": "61,000.00 AED",
+      "Date": "07 Jan 2025",
+      "Running Balance": "251,000.00 AED",
+      "Transaction Reference": "1100011000"
+    },
+    {
+      "Transaction Description": "CHARGESEPHCOP35805C34BG 253536363636 DTB BANK CHARGE SREDIFTSANITY2312 25-53533638-1-151 – AE0067452",
+      "Amount": "-0.05 AED",
+      "Date": "25 Dec 2024",
+      "Running Balance": "10,540.05 AED",
+      "Transaction Reference": "1100000912"
+    },
+    {
+      "Transaction Description": "DFT-DTB TT REF EPHCOP35805C34BG 326362383882 TEST TEST @2.6186 REDIFTSANITY2312 25-2363627-1-151 – AE0021345",
+      "Amount": "-14,809.245 AED",
+      "Date": "22 Aug 2024",
+      "Running Balance": "214,809.245 AED",
+      "Transaction Reference": "0198700356"
     }
+  ]
 }
+
 
 
 import SwiftUI
