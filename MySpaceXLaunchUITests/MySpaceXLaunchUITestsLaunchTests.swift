@@ -106,3 +106,15 @@ struct TransactionsResponse: Codable {
     let transactions: [Transaction]
 }
 
+
+{
+   "transactions":[
+      {
+         "type":"CHARGESEPHCOP35805C34BG 253536363636 DTB BANK CHARGE SREDIFTSANITY2312 25-53533638-1-151 – AE0033958",
+         "amount":"-2.00 AED",
+         "date":"30 Jan 2025",
+         "balance":"7,200.00 AED",
+         "referenceNumber":"1100023452"
+      }
+   ]
+}
