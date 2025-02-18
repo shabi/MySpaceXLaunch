@@ -31,42 +31,76 @@ class MySpaceXLaunchUITestsLaunchTests: XCTestCase {
     }
 }
 
-Transaction Description – On hover Complete Narrations should be
-shown
-1. CHARGESEPHCOP35805C34BG 253536363636 DTB BANK
-CHARGE SREDIFTSANITY2312 25-53533638-1-151 – AE0033958
-2. IFT-DTB TT REF EPHCOP35805C34BG 326362383882 CA2 ADD21
-ADD2 ADD3 @2.6186 REDIFTSANITY2312 25-2363627-1-151 –
-AE0042200
-3. DFT-DTB TT REF EPHCOP35805C34BG 326362383882 TEST TEST
-@2.6186 REDIFTSANITY2312 25-2363627-1-151 – AE0012345
-4. CHARGESEPHCOP35805C34BG 253536363636 DTB BANK
-CHARGE SREDIFTSANITY2312 25-53533638-1-151 – AE0067452
-5. DFT-DTB TT REF EPHCOP35805C34BG 326362383882 TEST TEST
-@2.6186 REDIFTSANITY2312 25-2363627-1-151 – AE0021345
-o Amount – Debit amount to be displayed in Black and <Currency> after
-the amount and credit to be displayed in Green and <Currency> after
-the amount
-1. -2.00 AED
-2. -200,000.45 AED
-3. 61,000.00 AED
-4. -0.05 AED
-5. -14,809.245 AED
-o Date - Value date should be populated
-1. 30 Jan 2025
-2. 30 Jan 2025
-3. 07 Jan 2025
-4. 25 Dec 2024
-5. 22 Aug 2024
-o Running Balance
-1. 7,200.00 AED
-2. 120,000.45 AED
-3. 251,000.00 AED
-4. 10,540.05 AED
-5. 214,809.245 AED
-o Transaction Reference
-1. 1100023452
-2. 1100023440
-3. 1100011000
-4. 1100000912
-5. 0198700356
+import Foundation
+
+public extension Bundle {
+    func decode<T: Decodable>(_ file: String, as type: T.Type) -> T? {
+        guard let url = self.url(forResource: file, withExtension: "json") else {
+            print("❌ Error: Could not find \(file).json in bundle.")
+            return nil
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let decodedData = try JSONDecoder().decode(T.self, from: data)
+            return decodedData
+        } catch {
+            print("❌ JSON Decoding Error: \(error.localizedDescription)")
+            return nil
+        }
+    }
+}
+
+
+import SwiftUI
+
+struct TransactionsListView: View {
+    @State private var transactions: [Transaction] = []
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack {
+                    ForEach(transactions) { transaction in
+                        TransactionView(transaction: transaction)
+                            .padding(.horizontal)
+                    }
+                }
+                .padding(.vertical)
+            }
+            .navigationTitle("Transactions")
+            .onAppear {
+                if let loadedTransactions: TransactionsResponse = Bundle.main.decode("transactions", as: TransactionsResponse.self) {
+                    self.transactions = loadedTransactions.transactions
+                }
+            }
+        }
+    }
+}
+
+
+import SwiftUI
+
+// Codable Model
+struct Transaction: Codable, Identifiable {
+    let id = UUID() // Unique identifier for SwiftUI List
+    let description: String
+    let amount: String
+    let date: String
+    let runningBalance: String
+    let transactionReference: String
+    
+    enum CodingKeys: String, CodingKey {
+        case description = "Transaction Description"
+        case amount = "Amount"
+        case date = "Date"
+        case runningBalance = "Running Balance"
+        case transactionReference = "Transaction Reference"
+    }
+}
+
+// Wrapper for an array of transactions
+struct TransactionsResponse: Codable {
+    let transactions: [Transaction]
+}
+
