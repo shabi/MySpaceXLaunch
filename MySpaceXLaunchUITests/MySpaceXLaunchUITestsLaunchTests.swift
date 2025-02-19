@@ -41,88 +41,142 @@ public enum AccountConstants {
          static let defaultSpacingZero: CGFloat = 0.0
     }
 }
+import SwiftUI
+import Combine
 
-public struct AccountLandingView: View {
-    @State var selectedTab = 2
-    
-    //Mock card data to show how to use
-    
-    let cardMockInfoModel = CardInfoModel(accountNameText: "PPS Main account",
-                                          accountAmountText: "160,000.00 AED",
-                                          accountNumberText: "89373772394",
-                                          accountTypeText: "Call account",
-                                          accessibilityIDs: [.topRightTrailingLastIcon: "shareIcon",
-                                                             .topRightTrailingPreviousIcon: "favoriteIcon",
-                                                             .tagView: "active",
-                                                             .topLeftTitle: "accountNameText",
-                                                             .topLeftSubtitle: "accountAmountText",
-                                                             .bottomLeftTitle: "accountNumberText",
-                                                             .bottomLeftSubtitle: "accountTypeText",
-                                                             .defaultValue: ""])
+// MARK: - Protocols
+protocol AccountLandingViewModelProtocol: ObservableObject {
+    var selectedTab: Int { get set }
+    var cardInfoModel: CardInfoModel { get }
+    var tabItems: [TabItem] { get }
+    var tabItemsAccessibility: [String] { get }
+    var isMasked: Bool { get set }
+    var cardAccountViewModel: CardAccountViewModel { get }
+    var transactionsListViewModel: TransactionsListViewModel { get }
+    func toggleMask()
+}
 
+// MARK: - ViewModel
+class AccountLandingViewModel: AccountLandingViewModelProtocol {
+    @Published var selectedTab: Int = 2
+    @Published var isMasked: Bool = false
+    private var cancellables = Set<AnyCancellable>()
     
-    let tabitems: [TabItem] = [
-        TabItem(icon: "brand-logo", title: "Home"),
-        TabItem(icon: "convert", title: "Payments"),
-        TabItem(icon: "accounts", title: "Accounts"),
-        TabItem(icon: "request", title: "Services"),
-        TabItem(icon: "hamburger-menu", title: "More")
-    ]
+    let cardInfoModel: CardInfoModel
+    let tabItems: [TabItem]
+    let tabItemsAccessibility: [String]
     
-    let tabitemsAccessibility: [String] = [
-        "tab_Home",
-        "tab_Payments",
-        "tab_Accounts",
-        "tab_Services",
-        "tab_More"
-    ]
+    let cardAccountViewModel: CardAccountViewModel
+    let transactionsListViewModel: TransactionsListViewModel
     
-    
-    public init(selectedTab: Int = 2, tabitems: [TabItem] = [TabItem]()) {
-        self.selectedTab = selectedTab
-    }
-    @EnvironmentObject private var coordinator: AppCoordinator
-    public var body: some View {
+    init() {
+        self.cardInfoModel = AccountLandingViewModel.loadCardInfo()
+        self.tabItems = AccountLandingViewModel.loadTabItems()
+        self.tabItemsAccessibility = ["tab_Home", "tab_Payments", "tab_Accounts", "tab_Services", "tab_More"]
         
+        self.cardAccountViewModel = CardAccountViewModel(cardInfoModel: cardInfoModel)
+        self.transactionsListViewModel = TransactionsListViewModel()
+        
+        setupBindings()
+    }
+    
+    func toggleMask() {
+        isMasked.toggle()
+    }
+    
+    private func setupBindings() {
+        $isMasked
+            .sink { [weak self] newValue in
+                self?.cardAccountViewModel.isMasked = newValue
+                self?.transactionsListViewModel.isMasked = newValue
+                self?.cardAccountViewModel.maskTitle(newValue)
+                self?.transactionsListViewModel.maskTitles(newValue)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private static func loadCardInfo() -> CardInfoModel {
+        guard let url = Bundle.main.url(forResource: "CardInfo", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let model = try? JSONDecoder().decode(CardInfoModel.self, from: data) else {
+            return CardInfoModel(accountNameText: "PPS Main account",
+                                 accountAmountText: "160,000.00 AED",
+                                 accountNumberText: "89373772394",
+                                 accountTypeText: "Call account",
+                                 accessibilityIDs: [:])
+        }
+        return model
+    }
+    
+    private static func loadTabItems() -> [TabItem] {
+        guard let url = Bundle.main.url(forResource: "TabItems", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let items = try? JSONDecoder().decode([TabItem].self, from: data) else {
+            return [
+                TabItem(icon: "brand-logo", title: "Home"),
+                TabItem(icon: "convert", title: "Payments"),
+                TabItem(icon: "accounts", title: "Accounts"),
+                TabItem(icon: "request", title: "Services"),
+                TabItem(icon: "hamburger-menu", title: "More")
+            ]
+        }
+        return items
+    }
+}
+
+// MARK: - View
+struct AccountLandingView: View {
+    @StateObject private var viewModel = AccountLandingViewModel()
+    
+    @EnvironmentObject private var coordinator: AppCoordinator
+    
+    var body: some View {
         ZStack {
             VStack(spacing: AccountConstants.Spacings.defaultSpacingZero) {
-                if selectedTab == 2 {
-                    ScreenHeader(screenTitleDataSource: ScreenHeaderDataModel(title: "Accounts",
-                                                                              titleActionIcons: ["show"],
-                                                                              isShowScreenHeaderActions: false,
-                                                                              isBackButtonShow: false, onHeaderAction: { actionType in
-//                        print("Shabi Action\(actionType)")
-                    }, onTitleHeaderAction: { actionType in
-                        print("Shabi Action\(actionType)")
-                        // publish
-                    }))
+                if viewModel.selectedTab == 2 {
+                    ScreenHeader(screenTitleDataSource: ScreenHeaderDataModel(
+                        title: "Accounts",
+                        titleActionIcons: ["show"],
+                        isShowScreenHeaderActions: false,
+                        isBackButtonShow: false,
+                        onTitleHeaderAction: { actionType in
+                            print("Action: \(actionType)")
+                            viewModel.toggleMask()
+                        }
+                    ))
                     .padding([.top, .horizontal], AccountConstants.Spacings.defaultHorizontalVerticalPadding)
-                }
-                else {
-                    Text("Selected Tab \(tabitems[selectedTab].title)")
+                } else {
+                    Text("Selected Tab \(viewModel.tabItems[viewModel.selectedTab].title)")
                 }
                 
                 ScrollView(.vertical) {
-                    
                     VStack {
-                        
-                        if selectedTab == 2 {
-                            VStack {
-                                VStack (spacing: AccountConstants.Spacings.defaultHorizontalVerticalPadding) {
-                                    CardAccount(cardType: .active,
-                                                cardAccountViewModel: CardAccountViewModel(cardInfoModel: cardMockInfoModel))
-                                    
-                                    SegmentedControl(seletedSegment: 0, segmentedOptions:  ["Transactions", "Details"], segmentedControlColorData: SegmentedControlColorData())
-                                }
-                                    
-
+                        if viewModel.selectedTab == 2 {
+                            VStack(spacing: AccountConstants.Spacings.defaultHorizontalVerticalPadding) {
+                                CardAccount(
+                                    cardType: .active,
+                                    cardAccountViewModel: viewModel.cardAccountViewModel
+                                )
+                                
+                                SegmentedControl(
+                                    seletedSegment: 0,
+                                    segmentedOptions: ["Transactions", "Details"],
+                                    segmentedControlColorData: SegmentedControlColorData()
+                                )
+                                
                                 VStack(spacing: 0) {
-                                    SectionHeader(sectionHeaderDataSource: SectionHeaderDataSource(title: "Last 5 transactions", linkButtonTitle: "View all")) {
-                                        debugPrint("Section Header pressed")
-                                    }
+                                    SectionHeader(
+                                        sectionHeaderDataSource: SectionHeaderDataSource(
+                                            title: "Last 5 transactions",
+                                            linkButtonTitle: "View all"
+                                        ),
+                                        action: {
+                                            debugPrint("Section Header pressed")
+                                        }
+                                    )
                                     .padding(.top, AccountConstants.Spacings.sectionHeaderToPadding)
                                     .padding(.bottom, AccountConstants.Spacings.sectionHeaderBottomPadding)
-                                    TransactionsListView()
+                                    TransactionsListView(viewModel: viewModel.transactionsListViewModel)
                                 }
                             }
                             .padding(.horizontal, AccountConstants.Spacings.defaultHorizontalVerticalPadding)
@@ -130,15 +184,18 @@ public struct AccountLandingView: View {
                     }
                 }
                 .safeAreaInset(edge: .bottom, spacing: AccountConstants.Spacings.defaultSpacingZero) {
-                    Spacer()
-                        .frame(height: AccountConstants.Spacings.scrollViewEdgeInsectPadding)
+                    Spacer().frame(height: AccountConstants.Spacings.scrollViewEdgeInsectPadding)
                 }
-
-                TabBar(tabs: tabitems, accessibilityIDs: self.tabitemsAccessibility, selectedTab: $selectedTab)
-                    .background(.white)
+                
+                TabBar(
+                    tabs: viewModel.tabItems,
+                    accessibilityIDs: viewModel.tabItemsAccessibility,
+                    selectedTab: $viewModel.selectedTab
+                )
+                .background(.white)
             }
         }
-        .background(Color.defaultAppBackgroundColor
-            .ignoresSafeArea())
+        .background(Color.defaultAppBackgroundColor.ignoresSafeArea())
     }
 }
+
