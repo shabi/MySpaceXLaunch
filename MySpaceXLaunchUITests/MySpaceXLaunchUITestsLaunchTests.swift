@@ -31,73 +31,114 @@ class MySpaceXLaunchUITestsLaunchTests: XCTestCase {
     }
 }
 
-Feature: Validate Transactions List Screen
-
-  Scenario: Validate transaction list with mock data
-    Given user "User1" is logged into the Mobile App
-    When the user navigates to the Transactions screen
-    Then the user should see the following transactions:
-      | Name                             | Amount       | Balance       |
-      | DTB Bank Charge                  | -2.00 AED   | 7,200.00 AED  |
-      | IFT-DTB TT REF                    | -200,000.45 AED | 120,000.45 AED |
-      | DFT-DTB TT REF                    | 61,000.00 AED | 251,000.00 AED |
-      | CHARGESEPHCOP                     | -0.05 AED   | 10,540.05 AED |
-      | TEST TRANSACTION                   | -14,809.245 AED | 214,809.245 AED |
-
-
-
-transactionSteps.ts
-
-import { Given, When, Then } from '@wdio/cucumber-framework';
-import TransactionPage from '../pageObjects/TransactionPage';
-
-Given(/^user "([^"]*)" is logged into the Mobile App$/, async (userType) => {
-    await TransactionPage.login(userType);  // Logs in the user
-});
-
-When(/^the user navigates to the Transactions screen$/, async () => {
-    await TransactionPage.navigateToTransactions();  // Opens transactions screen
-});
-
-Then(/^the user should see the following transactions:$/, async (table) => {
-    const expectedTransactions = table.hashes();
-    await TransactionPage.validateTransactions(expectedTransactions);  // Compares data
-});
-
-
-ransactionPage.ts
-
-import { expect } from '@wdio/globals';
-
-class TransactionPage {
+public enum AccountConstants {
     
-    // Locators (change based on actual accessibility identifiers)
-    private transactionRows = $$('//*[@accessibilityIdentifier="transactionRow"]');
-    
-    async login(userType: string) {
-        // Mock login step if needed
-        console.log(`Logging in as ${userType}`);
-    }
-
-    async navigateToTransactions() {
-        const transactionsTab = await $('//*[@accessibilityIdentifier="transactionsTab"]');
-        await transactionsTab.click();
-    }
-
-    async validateTransactions(expectedTransactions: any[]) {
-        const rows = await this.transactionRows;
-        expect(rows.length).toBe(expectedTransactions.length);
-
-        for (let i = 0; i < expectedTransactions.length; i++) {
-            const name = await rows[i].$('//*[@accessibilityIdentifier="transactionName"]').getText();
-            const amount = await rows[i].$('//*[@accessibilityIdentifier="transactionAmount"]').getText();
-            const balance = await rows[i].$('//*[@accessibilityIdentifier="transactionBalance"]').getText();
-
-            expect(name).toBe(expectedTransactions[i].Name);
-            expect(amount).toBe(expectedTransactions[i].Amount);
-            expect(balance).toBe(expectedTransactions[i].Balance);
-        }
+     enum Spacings {
+         static let defaultHorizontalVerticalPadding = 20.0
+         static let sectionHeaderToPadding = 16.0
+         static let sectionHeaderBottomPadding = 8.0
+         static let scrollViewEdgeInsectPadding: CGFloat = 40.0
+         static let defaultSpacingZero: CGFloat = 0.0
     }
 }
 
-export default new TransactionPage();
+public struct AccountLandingView: View {
+    @State var selectedTab = 2
+    
+    //Mock card data to show how to use
+    
+    let cardMockInfoModel = CardInfoModel(accountNameText: "PPS Main account",
+                                          accountAmountText: "160,000.00 AED",
+                                          accountNumberText: "89373772394",
+                                          accountTypeText: "Call account",
+                                          accessibilityIDs: [.topRightTrailingLastIcon: "shareIcon",
+                                                             .topRightTrailingPreviousIcon: "favoriteIcon",
+                                                             .tagView: "active",
+                                                             .topLeftTitle: "accountNameText",
+                                                             .topLeftSubtitle: "accountAmountText",
+                                                             .bottomLeftTitle: "accountNumberText",
+                                                             .bottomLeftSubtitle: "accountTypeText",
+                                                             .defaultValue: ""])
+
+    
+    let tabitems: [TabItem] = [
+        TabItem(icon: "brand-logo", title: "Home"),
+        TabItem(icon: "convert", title: "Payments"),
+        TabItem(icon: "accounts", title: "Accounts"),
+        TabItem(icon: "request", title: "Services"),
+        TabItem(icon: "hamburger-menu", title: "More")
+    ]
+    
+    let tabitemsAccessibility: [String] = [
+        "tab_Home",
+        "tab_Payments",
+        "tab_Accounts",
+        "tab_Services",
+        "tab_More"
+    ]
+    
+    
+    public init(selectedTab: Int = 2, tabitems: [TabItem] = [TabItem]()) {
+        self.selectedTab = selectedTab
+    }
+    @EnvironmentObject private var coordinator: AppCoordinator
+    public var body: some View {
+        
+        ZStack {
+            VStack(spacing: AccountConstants.Spacings.defaultSpacingZero) {
+                if selectedTab == 2 {
+                    ScreenHeader(screenTitleDataSource: ScreenHeaderDataModel(title: "Accounts",
+                                                                              titleActionIcons: ["show"],
+                                                                              isShowScreenHeaderActions: false,
+                                                                              isBackButtonShow: false, onHeaderAction: { actionType in
+//                        print("Shabi Action\(actionType)")
+                    }, onTitleHeaderAction: { actionType in
+                        print("Shabi Action\(actionType)")
+                        // publish
+                    }))
+                    .padding([.top, .horizontal], AccountConstants.Spacings.defaultHorizontalVerticalPadding)
+                }
+                else {
+                    Text("Selected Tab \(tabitems[selectedTab].title)")
+                }
+                
+                ScrollView(.vertical) {
+                    
+                    VStack {
+                        
+                        if selectedTab == 2 {
+                            VStack {
+                                VStack (spacing: AccountConstants.Spacings.defaultHorizontalVerticalPadding) {
+                                    CardAccount(cardType: .active,
+                                                cardAccountViewModel: CardAccountViewModel(cardInfoModel: cardMockInfoModel))
+                                    
+                                    SegmentedControl(seletedSegment: 0, segmentedOptions:  ["Transactions", "Details"], segmentedControlColorData: SegmentedControlColorData())
+                                }
+                                    
+
+                                VStack(spacing: 0) {
+                                    SectionHeader(sectionHeaderDataSource: SectionHeaderDataSource(title: "Last 5 transactions", linkButtonTitle: "View all")) {
+                                        debugPrint("Section Header pressed")
+                                    }
+                                    .padding(.top, AccountConstants.Spacings.sectionHeaderToPadding)
+                                    .padding(.bottom, AccountConstants.Spacings.sectionHeaderBottomPadding)
+                                    TransactionsListView()
+                                }
+                            }
+                            .padding(.horizontal, AccountConstants.Spacings.defaultHorizontalVerticalPadding)
+                        }
+                    }
+                }
+                .safeAreaInset(edge: .bottom, spacing: AccountConstants.Spacings.defaultSpacingZero) {
+                    Spacer()
+                        .frame(height: AccountConstants.Spacings.scrollViewEdgeInsectPadding)
+                }
+
+                TabBar(tabs: tabitems, accessibilityIDs: self.tabitemsAccessibility, selectedTab: $selectedTab)
+                    .background(.white)
+            }
+        }
+        .background(Color.defaultAppBackgroundColor
+            .ignoresSafeArea())
+    }
+}
