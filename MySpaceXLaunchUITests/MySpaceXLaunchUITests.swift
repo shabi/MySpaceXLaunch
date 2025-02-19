@@ -41,129 +41,58 @@ class MySpaceXLaunchUITests: XCTestCase {
     }
 }
 
-
-
-{
-  "transactions": [
-    {
-      "type": "CHARGESEPHCOP35805C34BG 253536363636 DTB BANK CHARGE SREDIFTSANITY2312 25-53533638-1-151 – AE0033958",
-      "amount": "-2.00 AED",
-      "date": "30 Jan 2025",
-      "balance": "Balance: 7,200.00 AED",
-      "referenceNumber": "1100023452"
-    },
-    {
-      "type": "IFT-DTB TT REF EPHCOP35805C34BG 326362383882 CA2 ADD21 ADD2 ADD3 @2.6186 REDIFTSANITY2312 25-2363627-1-151 – AE0042200",
-      "amount": "-200,000.45 AED",
-      "date": "30 Jan 2025",
-      "balance": "Balance: 120,000.45 AED",
-      "referenceNumber": "1100023440"
-    },
-    {
-      "type": "DFT-DTB TT REF EPHCOP35805C34BG 326362383882 TEST TEST @2.6186 REDIFTSANITY2312 25-2363627-1-151 – AE0012345",
-      "amount": "61,000.00 AED",
-      "date": "07 Jan 2025",
-      "balance": "Balance: 251,000.00 AED",
-      "referenceNumber": "1100011000"
-    },
-    {
-      "type": "CHARGESEPHCOP35805C34BG 253536363636 DTB BANK CHARGE SREDIFTSANITY2312 25-53533638-1-151 – AE0067452",
-      "amount": "-0.05 AED",
-      "date": "25 Dec 2024",
-      "balance": "Balance: 10,540.05 AED",
-      "referenceNumber": "1100000912"
-    },
-    {
-      "type": "DFT-DTB TT REF EPHCOP35805C34BG 326362383882 TEST TEST @2.6186 REDIFTSANITY2312 25-2363627-1-151 – AE0021345",
-      "amount": "-14,809.245 AED",
-      "date": "22 Aug 2024",
-      "balance": "Balance: 214,809.245 AED",
-      "referenceNumber": "0198700356"
+public enum AccessibilityID: Hashable {
+    
+    public enum TransactionRow: String {
+        case title
+        case amount
+        case date
     }
-  ]
+    
+    public enum CardView: String {
+        case title
+        case button
+    }
+    
+    public enum TabBar: String {
+        case home
+        case profile
+        case settings
+    }
+
+    case custom(String) // Allows dynamic keys
+
+    public var value: String {
+        switch self {
+        case .custom(let key): return key
+        }
+    }
 }
 
 
-import { Given, When, Then } from '@wdio/cucumber-framework';
-import fs from 'fs';  // Import fs module to read JSON data
-import TransactionPage from '../pageObjects/TransactionPage';
+class TransactionRowViewModel: ObservableObject {
+    let transaction: Transaction
+    let accessibilityIDs: [AccessibilityID.TransactionRow: String]
 
-Given(/^user "([^"]*)" is logged into the Mobile App$/, async (userType) => {
-    await TransactionPage.login(userType);  // Logs in the user
-});
-
-When(/^the user navigates to the Transactions screen$/, async () => {
-    await TransactionPage.navigateToTransactions();  // Opens transactions screen
-});
-
-Then(/^the user should see the transactions from the mock data$/, async () => {
-    // Read the mock transaction data from the JSON file
-    const mockData = JSON.parse(fs.readFileSync('path_to_your_mock_data.json', 'utf8')).transactions;
-    
-    // Compare each transaction from the UI with the expected mock data based on the identifier
-    await TransactionPage.validateTransactionsFromMockData(mockData);
-});
-
-
-class TransactionPage {
-    // Method to log in the user, assuming it's implemented elsewhere
-    async login(userType: string) {
-        // Perform login logic
+    init(transaction: Transaction, index: Int) {
+        self.transaction = transaction
+        self.accessibilityIDs = [
+            .title: "title_\(index)",
+            .amount: "amount_\(index)",
+            .date: "date_\(index)"
+        ]
     }
+}
 
-    // Navigate to the transactions screen
-    async navigateToTransactions() {
-        // Navigate to the screen containing the transactions
-    }
+struct TransactionsListView: View {
+    let transactions: [Transaction]
 
-    // Validate all transactions based on mock data
-    async validateTransactionsFromMockData(mockData: Array<any>) {
-        const uiTransactions = await this.getAllTransactionsFromUI();
-
-        // Compare each transaction from the UI with the mock data
-        for (let i = 0; i < mockData.length; i++) {
-            const mock = mockData[i];
-            const uiTransaction = uiTransactions[i];
-
-            // Compare the mock data with the UI data
-            if (mock.type !== uiTransaction.type || mock.amount !== uiTransaction.amount || mock.balance !== uiTransaction.balance || mock.referenceNumber !== uiTransaction.referenceNumber) {
-                throw new Error(`Transaction mismatch at index ${i}. Expected: ${JSON.stringify(mock)}, Found: ${JSON.stringify(uiTransaction)}`);
+    var body: some View {
+        List {
+            ForEach(transactions.indices, id: \.self) { index in
+                let viewModel = TransactionRowViewModel(transaction: transactions[index], index: index)
+                TransactionRow(viewModel: viewModel)
             }
         }
     }
-
-    // Fetch all transactions displayed in the UI
-    async getAllTransactionsFromUI() {
-        const transactions = [];
-        const numberOfTransactions = 5;  // Adjust this if the number of rows is dynamic
-
-        for (let i = 0; i < numberOfTransactions; i++) {
-            // Generate the selector dynamically based on the index (e.g., 'type_0', 'amount_0', 'balance_0')
-            const typeSelector = `type_${i}`;
-            const amountSelector = `amount_${i}`;
-            const balanceSelector = `balance_${i}`;
-            const referenceNumberSelector = `referenceNumber_${i}`;
-            
-            // Fetch the transaction element based on the dynamic selectors
-            const typeElement = await this.driver.$(`*=${typeSelector}`);
-            const amountElement = await this.driver.$(`*=${amountSelector}`);
-            const balanceElement = await this.driver.$(`*=${balanceSelector}`);
-            const referenceNumberElement = await this.driver.$(`*=${referenceNumberSelector}`);
-            
-            // Get the text for each field
-            const type = await typeElement.getText();
-            const amount = await amountElement.getText();
-            const balance = await balanceElement.getText();
-            const referenceNumber = await referenceNumberElement.getText();
-            
-            // Push the transaction details into the transactions array
-            transactions.push({ type, amount, balance, referenceNumber });
-        }
-
-        return transactions;
-    }
 }
-
-export default new TransactionPage();
-
-
