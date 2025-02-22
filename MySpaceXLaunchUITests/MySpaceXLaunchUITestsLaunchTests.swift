@@ -34,71 +34,105 @@ class MySpaceXLaunchUITestsLaunchTests: XCTestCase {
 public struct AccountLandingView: View {
     @StateObject private var viewModel = AccountLandingViewModel()
     
-    public init() {
-        
-    }
+    public init() {}
     
     public var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: AccountConstants.Spacings.defaultSpacingZero) {
-                if viewModel.selectedTab == 2 {
-                    ScreenHeader(screenTitleDataSource: ScreenHeaderDataModel(
-                        title: "Accounts",
-                        sectionHeaderIconSizeType: .medium,
-                        titleActionIcons: ["show"],
-                        isShowScreenHeaderActions: false,
-                        isBackButtonShow: false,
-                        onTitleHeaderAction: { actionType in
-                            print("Action: \(actionType)")
-                        }
-                    ))
-                    .padding([.top, .bottom, .horizontal], AccountConstants.Spacings.defaultHorizontalVerticalPadding)
-                } else {
-                    Text("Selected Tab \(viewModel.tabItems[viewModel.selectedTab].title)")
-                }
-                
-                ScrollView(.vertical) {
-                    VStack {
-                        if viewModel.selectedTab == 2 {
-                            VStack(spacing: AccountConstants.Spacings.defaultHorizontalVerticalPadding) {
-                                CardAccount(
-                                    cardType: .active,
-                                    cardAccountViewModel: viewModel.cardAccountViewModel
-                                )
-                                
-                                SegmentedControl(
-                                    seletedSegment: 0,
-                                    segmentedOptions: ["Transactions", "Details"],
-                                    segmentedControlColorData: SegmentedControlColorData()
-                                )
-                                VStack(spacing: AccountConstants.Spacings.defaultSpacingZero) {
-                                    SectionHeader(sectionHeaderDataSource: SectionHeaderDataSource(title: "Last 5 transactions", linkButtonTitle: "View all")) {
-                                        debugPrint("Section Header pressed")
-                                    }
-                                    .padding(.top, AccountConstants.Spacings.sectionHeaderTopPadding)
-                                    .padding(.bottom, AccountConstants.Spacings.sectionHeaderBottomPadding)
-                                    TransactionsListView(transactionsListViewModel: viewModel.transactionsListViewModel)
-                                }
-                               
-                            }
-                            .padding(.horizontal, AccountConstants.Spacings.defaultHorizontalVerticalPadding)
-                        }
-                    }
-                }.safeAreaInset(edge: .bottom, spacing: AccountConstants.Spacings.defaultSpacingZero) {
-                    Spacer()
-                        .frame(height: AccountConstants.Spacings.scrollViewEdgeInsectPadding)
-                }
-                
-                TabBar(
-                    tabs: viewModel.tabItems,
-                    accessibilityIDs: viewModel.tabItemsAccessibility,
-                    selectedTab: $viewModel.selectedTab
-                )
-                .background(.white)
+                headerView
+                scrollViewContent
+                tabBarView
             }
-        }.background(Color.defaultAppBackgroundColor
-            .ignoresSafeArea())
+        }
+        .background(Color.defaultAppBackgroundColor.ignoresSafeArea())
     }
+}
+
+// MARK: - Header View
+private extension AccountLandingView {
+    @ViewBuilder
+    var headerView: some View {
+        if viewModel.selectedTab == 2 {
+            screenHeader
+        } else {
+            Text("Selected Tab \(viewModel.tabItems[viewModel.selectedTab].title)")
+        }
+    }
+    
+    var screenHeader: some View {
+        ScreenHeader(screenTitleDataSource: ScreenHeaderDataModel(
+            title: "Accounts",
+            sectionHeaderIconSizeType: .medium,
+            titleActionIcons: ["show"],
+            isShowScreenHeaderActions: false,
+            isBackButtonShow: false,
+            onTitleHeaderAction: { actionType in
+                print("Action: \(actionType)")
+            }
+        ))
+        .padding([.top, .bottom, .horizontal], AccountConstants.Spacings.defaultHorizontalVerticalPadding)
+    }
+}
+
+// MARK: - Scroll View Content
+private extension AccountLandingView {
+    var scrollViewContent: some View {
+        ScrollView(.vertical) {
+            VStack {
+                if viewModel.selectedTab == 2 {
+                    transactionsSection
+                        .padding(.horizontal, AccountConstants.Spacings.defaultHorizontalVerticalPadding)
+                }
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: AccountConstants.Spacings.defaultSpacingZero) {
+            Spacer().frame(height: AccountConstants.Spacings.scrollViewEdgeInsectPadding)
+        }
+    }
+
+    var transactionsSection: some View {
+        VStack(spacing: AccountConstants.Spacings.defaultHorizontalVerticalPadding) {
+            CardAccount(
+                cardType: .active,
+                cardAccountViewModel: viewModel.cardAccountViewModel
+            )
+            
+            SegmentedControl(
+                seletedSegment: 0,
+                segmentedOptions: ["Transactions", "Details"],
+                segmentedControlColorData: SegmentedControlColorData()
+            )
+            
+            VStack(spacing: AccountConstants.Spacings.defaultSpacingZero) {
+                SectionHeader(
+                    sectionHeaderDataSource: SectionHeaderDataSource(
+                        title: "Last 5 transactions",
+                        linkButtonTitle: "View all"
+                    )
+                ) {
+                    debugPrint("Section Header pressed")
+                }
+                .padding(.top, AccountConstants.Spacings.sectionHeaderTopPadding)
+                .padding(.bottom, AccountConstants.Spacings.sectionHeaderBottomPadding)
+                
+                TransactionsListView(transactionsListViewModel: viewModel.transactionsListViewModel)
+            }
+        }
+    }
+}
+
+// MARK: - Tab Bar View
+private extension AccountLandingView {
+    var tabBarView: some View {
+        TabBar(
+            tabs: viewModel.tabItems,
+            accessibilityIDs: viewModel.tabItemsAccessibility,
+            selectedTab: $viewModel.selectedTab
+        )
+        .background(.white)
+    }
+}
+
     
 }
 
