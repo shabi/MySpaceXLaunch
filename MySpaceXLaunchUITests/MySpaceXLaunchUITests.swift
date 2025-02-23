@@ -41,58 +41,43 @@ class MySpaceXLaunchUITests: XCTestCase {
     }
 }
 
-public enum AccessibilityID: Hashable {
+public enum AppRoute: Hashable {
+    case home
+    case uiComponentList
+    case deviceActivation
+    case otpValidation
+    case accountsScreen
     
-    public enum TransactionRow: String {
-        case title
-        case amount
-        case date
-    }
+    // Mark: - Payment
+    case beneficiaryList
+    case addBeneficiary
     
-    public enum CardView: String {
-        case title
-        case button
-    }
-    
-    public enum TabBar: String {
-        case home
-        case profile
-        case settings
-    }
-
-    case custom(String) // Allows dynamic keys
-
-    public var value: String {
-        switch self {
-        case .custom(let key): return key
-        }
-    }
 }
 
-
-class TransactionRowViewModel: ObservableObject {
-    let transaction: Transaction
-    let accessibilityIDs: [AccessibilityID.TransactionRow: String]
-
-    init(transaction: Transaction, index: Int) {
-        self.transaction = transaction
-        self.accessibilityIDs = [
-            .title: "title_\(index)",
-            .amount: "amount_\(index)",
-            .date: "date_\(index)"
-        ]
+public class AppCoordinator: ObservableObject {
+    @Published public var path: [AppRoute]
+    
+    public init(path: [AppRoute] = []) {
+        self.path = path
     }
-}
 
-struct TransactionsListView: View {
-    let transactions: [Transaction]
+    public func push(_ route: AppRoute) {
+        path.append(route)
+    }
 
-    var body: some View {
-        List {
-            ForEach(transactions.indices, id: \.self) { index in
-                let viewModel = TransactionRowViewModel(transaction: transactions[index], index: index)
-                TransactionRow(viewModel: viewModel)
-            }
+    public func pop() {
+        guard path.isNonEmpty else { return }
+        path.removeLast()
+    }
+
+    public func popToRoute(_ route: AppRoute) {
+        guard path.isNonEmpty else { return }
+        while let lastRoute = path.last, lastRoute != route {
+            path.removeLast()
         }
+    }
+
+    public func moveToRoot() {
+        path = []
     }
 }
