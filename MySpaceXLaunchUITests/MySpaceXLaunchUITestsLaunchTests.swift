@@ -31,108 +31,189 @@ class MySpaceXLaunchUITestsLaunchTests: XCTestCase {
     }
 }
 
-public struct AccountLandingView: View {
-    @StateObject private var viewModel = AccountLandingViewModel()
-    
-    public init() {}
-    
-    public var body: some View {
-        ZStack(alignment: .bottom) {
-            VStack(spacing: AccountConstants.Spacings.defaultSpacingZero) {
-                headerView
-                scrollViewContent
-                tabBarView
+import SwiftUI
+
+protocol Coordinator: ObservableObject {
+    func start() -> AnyView
+}
+//
+import SwiftUI
+
+class AppCoordinator: ObservableObject {
+    @Published var isAuthenticated = false
+    @Published var selectedTab = 0
+
+    private var featureCoordinators: [any Coordinator]
+
+    init() {
+        featureCoordinators = [
+            HomeCoordinator(),
+            PaymentsCoordinator(),
+            AccountsCoordinator(),
+            MoreCoordinator()
+        ]
+    }
+
+    func start() -> AnyView {
+        isAuthenticated ? AnyView(MainTabView(coordinator: self)) : AnyView(LoginView(coordinator: self))
+    }
+
+    func authenticateUser() {
+        isAuthenticated = true
+    }
+
+    func viewForTab(index: Int) -> AnyView {
+        return featureCoordinators[index].start()
+    }
+}
+//
+
+import SwiftUI
+
+struct LoginView: View {
+    @ObservedObject var coordinator: AppCoordinator
+
+    var body: some View {
+        VStack {
+            Text("Login Screen")
+            Button("Login") {
+                coordinator.authenticateUser()
             }
         }
-        .background(Color.defaultAppBackgroundColor.ignoresSafeArea())
+    }
+}
+//
+
+import SwiftUI
+
+struct MainTabView: View {
+    @ObservedObject var coordinator: AppCoordinator
+
+    var body: some View {
+        TabView(selection: $coordinator.selectedTab) {
+            ForEach(0..<coordinator.featureCoordinators.count, id: \.self) { index in
+                coordinator.viewForTab(index: index)
+                    .tabItem {
+                        tabIcon(for: index)
+                        Text(tabTitle(for: index))
+                    }
+                    .tag(index)
+            }
+        }
+    }
+
+    private func tabTitle(for index: Int) -> String {
+        switch index {
+        case 0: return "Home"
+        case 1: return "Payments"
+        case 2: return "Accounts"
+        case 3: return "More"
+        default: return ""
+        }
+    }
+
+    private func tabIcon(for index: Int) -> Image {
+        switch index {
+        case 0: return Image(systemName: "house.fill")
+        case 1: return Image(systemName: "creditcard.fill")
+        case 2: return Image(systemName: "banknote.fill")
+        case 3: return Image(systemName: "ellipsis.circle.fill")
+        default: return Image(systemName: "questionmark")
+        }
+    }
+}
+//
+
+import SwiftUI
+
+class AccountsCoordinator: ObservableObject {
+    @Published var navigationPath = NavigationPath()
+
+    func start() -> AnyView {
+        AnyView(AccountsView(coordinator: self))
+    }
+
+    func navigateTo(_ route: AccountsRoute) {
+        navigationPath.append(route)
+    }
+
+    func goBack() {
+        navigationPath.removeLast()
     }
 }
 
-// MARK: - Header View
-private extension AccountLandingView {
-    @ViewBuilder
-    var headerView: some View {
-        if viewModel.selectedTab == 2 {
-            screenHeader
-        } else {
-            Text("Selected Tab \(viewModel.tabItems[viewModel.selectedTab].title)")
-        }
-    }
-    
-    var screenHeader: some View {
-        ScreenHeader(screenTitleDataSource: ScreenHeaderDataModel(
-            title: "Accounts",
-            sectionHeaderIconSizeType: .medium,
-            titleActionIcons: ["show"],
-            isShowScreenHeaderActions: false,
-            isBackButtonShow: false,
-            onTitleHeaderAction: { actionType in
-                print("Action: \(actionType)")
-            }
-        ))
-        .padding([.top, .bottom, .horizontal], AccountConstants.Spacings.defaultHorizontalVerticalPadding)
-    }
+enum AccountsRoute: Hashable {
+    case accountsList
+    case transactionsList(accountId: String)
+    case transactionDetail(transactionId: String)
 }
 
-// MARK: - Scroll View Content
-private extension AccountLandingView {
-    var scrollViewContent: some View {
-        ScrollView(.vertical) {
+//
+import SwiftUI
+
+struct AccountsView: View {
+    @ObservedObject var coordinator: AccountsCoordinator
+
+    var body: some View {
+        NavigationStack(path: $coordinator.navigationPath) {
             VStack {
-                if viewModel.selectedTab == 2 {
-                    transactionsSection
-                        .padding(.horizontal, AccountConstants.Spacings.defaultHorizontalVerticalPadding)
+                Text("Accounts Screen")
+                Button("View Transactions") {
+                    coordinator.navigateTo(.transactionsList(accountId: "12345"))
+                }
+            }
+            .navigationDestination(for: AccountsRoute.self) { route in
+                switch route {
+                case .accountsList:
+                    AccountsView(coordinator: coordinator)
+
+                case .transactionsList(let accountId):
+                    TransactionsView(coordinator: coordinator, accountId: accountId)
+
+                case .transactionDetail(let transactionId):
+                    TransactionDetailView(coordinator: coordinator, transactionId: transactionId)
                 }
             }
         }
-        .safeAreaInset(edge: .bottom, spacing: AccountConstants.Spacings.defaultSpacingZero) {
-            Spacer().frame(height: AccountConstants.Spacings.scrollViewEdgeInsectPadding)
-        }
     }
+}
+//
+import SwiftUI
 
-    var transactionsSection: some View {
-        VStack(spacing: AccountConstants.Spacings.defaultHorizontalVerticalPadding) {
-            CardAccount(
-                cardType: .active,
-                cardAccountViewModel: viewModel.cardAccountViewModel
-            )
-            
-            SegmentedControl(
-                seletedSegment: 0,
-                segmentedOptions: ["Transactions", "Details"],
-                segmentedControlColorData: SegmentedControlColorData()
-            )
-            
-            VStack(spacing: AccountConstants.Spacings.defaultSpacingZero) {
-                SectionHeader(
-                    sectionHeaderDataSource: SectionHeaderDataSource(
-                        title: "Last 5 transactions",
-                        linkButtonTitle: "View all"
-                    )
-                ) {
-                    debugPrint("Section Header pressed")
-                }
-                .padding(.top, AccountConstants.Spacings.sectionHeaderTopPadding)
-                .padding(.bottom, AccountConstants.Spacings.sectionHeaderBottomPadding)
-                
-                TransactionsListView(transactionsListViewModel: viewModel.transactionsListViewModel)
+struct TransactionDetailView: View {
+    @ObservedObject var coordinator: AccountsCoordinator
+    let transactionId: String
+
+    var body: some View {
+        VStack {
+            Text("Transaction Details for ID: \(transactionId)")
+            Button("Back") {
+                coordinator.goBack()
             }
         }
     }
 }
 
-// MARK: - Tab Bar View
-private extension AccountLandingView {
-    var tabBarView: some View {
-        TabBar(
-            tabs: viewModel.tabItems,
-            accessibilityIDs: viewModel.tabItemsAccessibility,
-            selectedTab: $viewModel.selectedTab
-        )
-        .background(.white)
+//
+
+
+import SwiftUI
+
+class PaymentsCoordinator: ObservableObject {
+    @Published var navigationPath = NavigationPath()
+
+    func start() -> AnyView {
+        AnyView(PaymentsView(coordinator: self))
     }
 }
+//
+import SwiftUI
 
-    
+class MoreCoordinator: ObservableObject {
+    @Published var navigationPath = NavigationPath()
+
+    func start() -> AnyView {
+        AnyView(MoreView(coordinator: self))
+    }
 }
 
