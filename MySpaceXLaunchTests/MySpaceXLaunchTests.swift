@@ -4,189 +4,119 @@
 //
 //  Created by Shabi Naqvi on 07/08/22.
 //
+protocol DateFilterable {
+    var selectedTimeframe: Timeframe? { get set }
+    var startDate: Date? { get set }
+    var endDate: Date? { get set }
 
-protocol FilterViewModelProtocol: ObservableObject { var model: FilterModel { get set } var isApplyEnabled: Bool { get } var isResetEnabled: Bool { get }
-
-func reset()
-func apply()
-func updateTimeframe(_ timeframe: Timeframe)
-func updateTransactionType(_ type: TransactionType?)
+    var isCustomDateVisible: Bool { get }
 }
 
-class FilterViewModel: FilterViewModelProtocol { @Published var model: FilterModel { didSet { updateButtonStates() } }
+protocol FilterActionControllable {
+    var isApplyEnabled: Bool { get }
+    var isResetEnabled: Bool { get }
 
-@Published private(set) var isApplyEnabled = false
-@Published private(set) var isResetEnabled = false
-
-init() {
-    self.model = FilterModel(
-        timeframe: .custom,
-        startDate: nil,
-        endDate: nil,
-        transactionType: nil,
-        minAmount: "",
-        maxAmount: ""
-    )
-    updateButtonStates()
+    func resetFilters()
 }
 
-func reset() {
-    model = FilterModel(
-        timeframe: .custom,
-        startDate: nil,
-        endDate: nil,
-        transactionType: nil,
-        minAmount: "",
-        maxAmount: ""
-    )
+enum Timeframe: String, CaseIterable {
+    case today = "Today"
+    case last7Days = "Last 7 days"
+    case last15Days = "Last 15 days"
+    case last30Days = "Last 30 days"
+    case last6Months = "Last 6 months"
+    case custom = "Custom timeframe"
 }
 
-func apply() {
-    print("Apply logic with: \(model)")
+enum TransactionType: String {
+    case debit = "Debit"
+    case credit = "Credit"
 }
 
-func updateTimeframe(_ timeframe: Timeframe) {
-    model.timeframe = timeframe
+final class FilterViewModel: ObservableObject, DateFilterable, FilterActionControllable {
+    
+    // MARK: - DateFilterable
+    @Published var selectedTimeframe: Timeframe? = nil
+    @Published var startDate: Date? = nil
+    @Published var endDate: Date? = nil
+
+    var isCustomDateVisible: Bool {
+        selectedTimeframe == .custom
+    }
+
+    // MARK: - FilterActionControllable
+    @Published var selectedTransactionType: TransactionType? = nil
+    @Published var transactionAmount: Double? = nil
+
+    var isApplyEnabled: Bool {
+        selectedTimeframe != nil || selectedTransactionType != nil || transactionAmount != nil
+    }
+
+    var isResetEnabled: Bool {
+        isApplyEnabled
+    }
+
+    func resetFilters() {
+        selectedTimeframe = nil
+        startDate = nil
+        endDate = nil
+        selectedTransactionType = nil
+        transactionAmount = nil
+    }
 }
 
-func updateTransactionType(_ type: TransactionType?) {
-    model.transactionType = type
-}
 
-private func updateButtonStates() {
-    let hasValidTimeframe = model.timeframe != .custom
-    let hasTransactionType = model.transactionType != nil
-    let hasAmount = !(model.minAmount.trimmingCharacters(in: .whitespaces).isEmpty) ||
-                    !(model.maxAmount.trimmingCharacters(in: .whitespaces).isEmpty)
+struct FilterView<ViewModel>: View where ViewModel: DateFilterable & FilterActionControllable {
+    @ObservedObject var viewModel: ViewModel
 
-    let anyFieldSelected = hasValidTimeframe || hasTransactionType || hasAmount
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Timeframe").font(.headline)
 
-    isApplyEnabled = anyFieldSelected
-    isResetEnabled = anyFieldSelected
-}
-}
-
-import SwiftUI
-
-struct FilterView<VM: FilterViewModelProtocol>: View { @ObservedObject var viewModel: VM
-
-var body: some View {
-    NavigationView {
-        VStack(spacing: 20) {
-            Text("Filter")
-                .font(.headline)
-
-            // Timeframe Section
-            VStack(alignment: .leading) {
-                Text("Timeframe")
-                    .font(.subheadline)
-
-                ForEach(Timeframe.allCases) { item in
-                    HStack {
-                        Image(systemName: viewModel.model.timeframe == item ? "largecircle.fill.circle" : "circle")
-                            .onTapGesture {
-                                viewModel.updateTimeframe(item)
-                            }
-                        Text(item.rawValue)
-                            .onTapGesture {
-                                viewModel.updateTimeframe(item)
-                            }
-                    }
-                }
-            }
-
-            // Custom Date Pickers
-            if viewModel.model.timeframe == .custom {
-                VStack(alignment: .leading) {
-                    Text("Start date")
-                    DatePicker("",
-                               selection: Binding(
-                                    get: { viewModel.model.startDate ?? Date() },
-                                    set: { viewModel.model.startDate = $0 }
-                               ),
-                               displayedComponents: .date)
-                        .labelsHidden()
-
-                    Text("End date")
-                    DatePicker("",
-                               selection: Binding(
-                                    get: { viewModel.model.endDate ?? Date() },
-                                    set: { viewModel.model.endDate = $0 }
-                               ),
-                               displayedComponents: .date)
-                        .labelsHidden()
-                }
-            }
-
-            // Transaction Type
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Transaction type")
-
+            ForEach(Timeframe.allCases, id: \.self) { timeframe in
                 HStack {
-                    Button("Debit") {
-                        viewModel.updateTransactionType(.debit)
-                    }
-                    .padding()
-                    .background(viewModel.model.transactionType == .debit ? Color.blue : Color.gray.opacity(0.3))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-
-                    Button("Credit") {
-                        viewModel.updateTransactionType(.credit)
-                    }
-                    .padding()
-                    .background(viewModel.model.transactionType == .credit ? Color.blue : Color.gray.opacity(0.3))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                    Image(systemName: viewModel.selectedTimeframe == timeframe ? "largecircle.fill.circle" : "circle")
+                        .onTapGesture {
+                            viewModel.selectedTimeframe = timeframe
+                        }
+                    Text(timeframe.rawValue)
+                        .onTapGesture {
+                            viewModel.selectedTimeframe = timeframe
+                        }
                 }
             }
 
-            // Transaction Amount Range
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Transaction Amount")
-                HStack {
-                    TextField("0", text: $viewModel.model.minAmount)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .keyboardType(.decimalPad)
-
-                    Text("to")
-
-                    TextField("Any", text: $viewModel.model.maxAmount)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .keyboardType(.decimalPad)
-                }
+            if viewModel.isCustomDateVisible {
+                DatePicker("Start Date", selection: Binding($viewModel.startDate, replacingNilWith: Date()), displayedComponents: .date)
+                DatePicker("End Date", selection: Binding($viewModel.endDate, replacingNilWith: Date()), displayedComponents: .date)
             }
 
-            Spacer()
-
-            // Reset and Apply Buttons
             HStack {
                 Button("Reset") {
-                    viewModel.reset()
+                    viewModel.resetFilters()
                 }
                 .disabled(!viewModel.isResetEnabled)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(viewModel.isResetEnabled ? Color.gray.opacity(0.3) : Color.gray.opacity(0.1))
-                .foregroundColor(viewModel.isResetEnabled ? .black : .gray)
-                .cornerRadius(10)
+
+                Spacer()
 
                 Button("Apply") {
-                    viewModel.apply()
+                    // Trigger Apply
                 }
                 .disabled(!viewModel.isApplyEnabled)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(viewModel.isApplyEnabled ? Color.blue : Color.gray.opacity(0.1))
-                .foregroundColor(viewModel.isApplyEnabled ? .white : .gray)
-                .cornerRadius(10)
             }
         }
         .padding()
     }
 }
-}
 
+extension Binding where Value == Date? {
+    init(_ source: Binding<Date?>, replacingNilWith defaultValue: Date) {
+        self.init(
+            get: { source.wrappedValue ?? defaultValue },
+            set: { source.wrappedValue = $0 }
+        )
+    }
+}
 
 
 import XCTest
